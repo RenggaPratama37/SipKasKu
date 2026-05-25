@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionScreen(
     navController: NavController
@@ -25,6 +26,9 @@ fun AddTransactionScreen(
         mutableStateOf("Food")
     }
     var isIncome by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var expanded by remember {
         mutableStateOf(false)
     }
     val categories = listOf(
@@ -70,9 +74,55 @@ fun AddTransactionScreen(
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
-            Text(
-                text = "Category: $selectedCategory"
-            )
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = {
+                    expanded = !expanded
+                }
+            ) {
+
+                OutlinedTextField(
+                    value = selectedCategory,
+                    onValueChange = {},
+                    readOnly = true,
+
+                    label = {
+                        Text("Category")
+                    },
+
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = expanded
+                        )
+                    },
+
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {
+                        expanded = false
+                    }
+                ) {
+
+                    categories.forEach { category ->
+
+                        DropdownMenuItem(
+                            text = {
+                                Text(category)
+                            },
+
+                            onClick = {
+                                selectedCategory = category
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
             Row {
                 FilterChip(
                     selected = !isIncome,
