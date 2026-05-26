@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.renium.sipkasku.utils.formatRupiah
 
 @Composable
 fun BalanceCard(
@@ -23,7 +24,7 @@ fun BalanceCard(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Rp $balance",
+                text = formatRupiah(balance),
                 style = MaterialTheme.typography.headlineMedium
             )
         }

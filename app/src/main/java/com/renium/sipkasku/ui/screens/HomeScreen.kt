@@ -13,16 +13,34 @@ import androidx.compose.foundation.lazy.items
 import com.renium.sipkasku.model.Transaction
 import com.renium.sipkasku.ui.components.BalanceCard
 import com.renium.sipkasku.ui.components.TransactionItem
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.renium.sipkasku.viewmodel.HomeViewModel
+import com.renium.sipkasku.viewmodel.TransactionViewModelFactory
+import com.renium.sipkasku.data.repository.TransactionRepository
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 @Composable
 fun HomeScreen(
-    navController: NavController
+    navController: NavController,
+    repository: TransactionRepository
 ) {
-    val transactions = listOf(
-        Transaction("Coffee", 25000.0, false),
-        Transaction("Food", 50000.0, false),
-        Transaction("Salary", 3000000.0, true)
+
+    val viewModel: HomeViewModel = viewModel(
+        factory = TransactionViewModelFactory(repository)
     )
+
+    val transactions by viewModel
+        .transactions
+        .collectAsState()
+
+    val balance = transactions.sumOf { transaction ->
+        if (transaction.isIncome) {
+            transaction.amount
+        } else {
+            -transaction.amount
+        }
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -43,7 +61,7 @@ fun HomeScreen(
         ) {
 
             BalanceCard(
-                balance = 2925000.0
+                balance = balance
             )
 
             Spacer(modifier = Modifier.height(24.dp))

@@ -5,12 +5,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.renium.sipkasku.model.Transaction
+import com.renium.sipkasku.data.local.TransactionEntity
 import androidx.compose.ui.graphics.Color
+import com.renium.sipkasku.utils.formatRupiah
 
 @Composable
 fun TransactionItem(
-    transaction: Transaction
+    transaction: TransactionEntity
 ) {
     Card(
         modifier = Modifier.fillMaxWidth()
@@ -23,11 +24,7 @@ fun TransactionItem(
         ) {
             Text(transaction.title)
             Text(
-                text =
-                    if (transaction.isIncome)
-                        "+ Rp ${transaction.amount}"
-                    else
-                        "- Rp ${transaction.amount}",
+                text = formatRupiah(transaction.amount),
                 color =
                     if (transaction.isIncome)
                         Color.Green

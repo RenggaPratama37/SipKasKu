@@ -8,9 +8,10 @@ import com.renium.sipkasku.ui.screens.AddTransactionScreen
 import com.renium.sipkasku.ui.screens.HomeScreen
 import com.renium.sipkasku.ui.screens.SettingsScreen
 import com.renium.sipkasku.ui.screens.StatisticsScreen
+import com.renium.sipkasku.data.repository.TransactionRepository
 
 @Composable
-fun NavGraph() {
+fun NavGraph(repository: TransactionRepository) {
 
     val navController = rememberNavController()
 
@@ -20,11 +21,18 @@ fun NavGraph() {
     ) {
 
         composable(Screen.Home.route) {
-            HomeScreen(navController)
+            HomeScreen(
+                navController = navController,
+                repository = repository
+            )
         }
 
         composable(Screen.AddTransaction.route) {
-            AddTransactionScreen(navController)
+            AddTransactionScreen(
+                navController = navController,
+                repository = repository
+            )
+
         }
 
         composable(Screen.Statistics.route) {
