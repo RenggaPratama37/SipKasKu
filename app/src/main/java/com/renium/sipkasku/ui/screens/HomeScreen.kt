@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import com.renium.sipkasku.model.Transaction
 import com.renium.sipkasku.ui.components.BalanceCard
 import com.renium.sipkasku.ui.components.TransactionItem
+import com.renium.sipkasku.ui.components.EmptyState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.renium.sipkasku.viewmodel.HomeViewModel
 import com.renium.sipkasku.viewmodel.TransactionViewModelFactory
@@ -73,15 +74,22 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            if (transactions.isEmpty()) {
+                Box(Modifier.weight(1f)) {
+                    EmptyState()
+                }
+            } else {
+                LazyColumn(
+                    Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
 
-                items(transactions) { transaction ->
+                    items(transactions) { transaction ->
 
-                    TransactionItem(
-                        transaction = transaction
-                    )
+                        TransactionItem(
+                            transaction = transaction
+                        )
+                    }
                 }
             }
         }
