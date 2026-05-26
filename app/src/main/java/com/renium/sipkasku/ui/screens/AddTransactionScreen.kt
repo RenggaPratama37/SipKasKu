@@ -10,7 +10,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import com.renium.sipkasku.data.repository.TransactionRepository
 import com.renium.sipkasku.viewmodel.AddTransactionViewModel
 import com.renium.sipkasku.viewmodel.TransactionViewModelFactory
@@ -29,8 +30,10 @@ fun AddTransactionScreen(
         mutableStateOf("")
     }
 
-    var amount by rememberSaveable {
-        mutableStateOf("")
+    var amount by rememberSaveable(
+        stateSaver = TextFieldValue.Saver
+    ) {
+        mutableStateOf(TextFieldValue(""))
     }
 
     var selectedCategory by rememberSaveable {
@@ -90,26 +93,25 @@ fun AddTransactionScreen(
             // AMOUNT
             OutlinedTextField(
                 value = amount,
-
                 onValueChange = { input ->
-
-                    val cleanString = input.replace(
+                    val cleanString = input.text.replace(
                         "[^\\d]".toRegex(),
                         ""
                     )
-
-                    if (cleanString.isNotEmpty()) {
-
-                        amount = NumberFormat
+                    if (cleanString.isEmpty()) {
+                        amount = TextFieldValue("")
+                    } else {
+                        val formatted = NumberFormat
                             .getNumberInstance(
                                 Locale("in", "ID")
                             )
-                            .format(
-                                cleanString.toLong()
+                            .format(cleanString.toLong())
+                        amount = TextFieldValue(
+                            text = formatted,
+                            selection = TextRange(
+                                formatted.length
                             )
-
-                    } else {
-                        amount = ""
+                        )
                     }
                 },
 
@@ -219,12 +221,10 @@ fun AddTransactionScreen(
                     viewModel.saveTransaction(
                         title = title,
 
-                        amount = amount
+                        amount = amount.text
                             .replace(".", "")
                             .toDoubleOrNull() ?: 0.0,
-
                         category = selectedCategory,
-
                         isIncome = isIncome
                     )
 
