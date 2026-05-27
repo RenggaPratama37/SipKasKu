@@ -43,53 +43,30 @@ fun HomeScreen(
             -transaction.amount
         }
     }
-
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    navController.navigate(Screen.AddTransaction.route)
-                }
-            ) {
-                Text("+")
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        BalanceCard(balance = balance)
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "Recent Transactions",
+            style = MaterialTheme.typography.titleLarge
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        if (transactions.isEmpty()) {
+            Box(Modifier.weight(1f)) {
+                EmptyState()
             }
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
-        ) {
-
-            BalanceCard(
-                balance = balance
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Recent Transactions",
-                style = MaterialTheme.typography.titleLarge
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            if (transactions.isEmpty()) {
-                Box(Modifier.weight(1f)) {
-                    EmptyState()
-                }
-            } else {
-                LazyColumn(
-                    Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+        } else {
+            LazyColumn(
+                Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-
                     items(transactions) { transaction ->
-
                         SwipeableTransactionItem(
                             transaction = transaction,
-
                             onDelete = {
                                 viewModel.deleteTransaction(
                                     transaction
@@ -101,4 +78,3 @@ fun HomeScreen(
             }
         }
     }
-}

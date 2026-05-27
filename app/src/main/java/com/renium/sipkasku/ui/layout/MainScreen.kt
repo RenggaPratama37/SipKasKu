@@ -9,6 +9,8 @@ import com.renium.sipkasku.ui.screens.AddTransactionScreen
 import com.renium.sipkasku.ui.screens.HomeScreen
 import com.renium.sipkasku.ui.screens.SettingsScreen
 import com.renium.sipkasku.ui.screens.StatisticsScreen
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.padding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,12 +58,28 @@ fun MainScreen(
                     )
                 }
             }
+        },
+        floatingActionButton = {
+
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate(
+                        Screen.AddTransaction.route
+                    )
+                }
+            ) {
+                Icon(
+                    imageVector = Screen.AddTransaction.icon,
+                    contentDescription = "Add"
+                )
+            }
         }
     ){
         padding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route
+            startDestination = Screen.Home.route,
+            modifier = Modifier.padding(padding)
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
