@@ -7,9 +7,10 @@ import com.renium.sipkasku.data.repository.TransactionRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    repository: TransactionRepository
+    private val repository: TransactionRepository
 ) : ViewModel() {
 
     val transactions: StateFlow<List<TransactionEntity>> =
@@ -20,4 +21,12 @@ class HomeViewModel(
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = emptyList()
             )
+
+    fun deleteTransaction(
+        transaction: TransactionEntity
+    ) {
+        viewModelScope.launch {
+            repository.deleteTransaction(transaction)
+        }
+    }
 }
