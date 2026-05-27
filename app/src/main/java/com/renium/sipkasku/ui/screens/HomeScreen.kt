@@ -20,11 +20,7 @@ import com.renium.sipkasku.viewmodel.TransactionViewModelFactory
 import com.renium.sipkasku.data.repository.TransactionRepository
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.rememberSwipeToDismissBoxState
-import androidx.compose.material3.SwipeToDismissBoxValue
-import androidx.compose.foundation.background
-import androidx.compose.ui.graphics.Color
+import com.renium.sipkasku.ui.components.SwipeableTransactionItem
 
 @Composable
 fun HomeScreen(
@@ -91,43 +87,15 @@ fun HomeScreen(
 
                     items(transactions) { transaction ->
 
-                        val dismissState =
-                            rememberSwipeToDismissBoxState(
-                                confirmValueChange = { value ->
-                                    if (
-                                        value ==
-                                        SwipeToDismissBoxValue.EndToStart
-                                    ) {
-                                        viewModel.deleteTransaction(
-                                            transaction
-                                        )
-                                        true
-                                    } else {
-                                        false
-                                    }
-                                }
-                            )
-                        SwipeToDismissBox(
-                            state = dismissState,
-                            backgroundContent = {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(Color.Red)
-                                        .padding(end = 20.dp),
-                                    contentAlignment = Alignment.CenterEnd
-                                ) {
-                                    Text(
-                                        text = "Delete"
-                                    )
-                                }
-                            }
-                        ) {
+                        SwipeableTransactionItem(
+                            transaction = transaction,
 
-                            TransactionItem(
-                                transaction = transaction
-                            )
-                        }
+                            onDelete = {
+                                viewModel.deleteTransaction(
+                                    transaction
+                                )
+                            }
+                        )
                     }
                 }
             }
