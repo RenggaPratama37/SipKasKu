@@ -1,106 +1,178 @@
 package com.renium.sipkasku.ui.layout
 
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.navigation.compose.*
-import com.renium.sipkasku.navigation.Screen
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.renium.sipkasku.data.repository.TransactionRepository
+import com.renium.sipkasku.navigation.Screen
 import com.renium.sipkasku.ui.screens.AddTransactionScreen
 import com.renium.sipkasku.ui.screens.HomeScreen
 import com.renium.sipkasku.ui.screens.SettingsScreen
 import com.renium.sipkasku.ui.screens.StatisticsScreen
-import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.padding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    repository : TransactionRepository
+    repository: TransactionRepository
 ) {
+
     val navController = rememberNavController()
+
     val items = listOf(
         Screen.Home,
         Screen.Statistics,
         Screen.Settings
     )
+
+    val currentRoute by navController
+        .currentBackStackEntryAsState()
+
+    val route = currentRoute
+        ?.destination
+        ?.route
+
     Scaffold(
+
         topBar = {
+
             TopAppBar(
-                title = { Text("SipKasKu") }
+                title = {
+
+                    Text(
+                        text =
+                            items.find {
+                                it.route == route
+                            }?.title ?: "SipKasKu"
+                    )
+                }
             )
         },
+
         bottomBar = {
+
             NavigationBar {
-                val currentRoute =
-                    navController
-                        .currentBackStackEntryAsState()
-                        .value
-                        ?.destination
-                        ?.route
+
                 items.forEach { screen ->
+
                     NavigationBarItem(
+
                         selected =
-                            currentRoute == screen.route,
+                            route == screen.route,
+
                         onClick = {
+
                             navController.navigate(
                                 screen.route
-                            )
+                            ) {
+
+                                popUpTo(
+                                    Screen.Home.route
+                                )
+
+                                launchSingleTop = true
+                            }
                         },
+
                         icon = {
+
                             Icon(
                                 imageVector = screen.icon,
                                 contentDescription = screen.title
                             )
                         },
+
                         label = {
+
                             Text(screen.title)
                         }
                     )
                 }
             }
         },
+
         floatingActionButton = {
 
-            FloatingActionButton(
-                onClick = {
-                    navController.navigate(
-                        Screen.AddTransaction.route
+            if (
+                route == Screen.Home.route
+            ) {
+
+                FloatingActionButton(
+                    onClick = {
+
+                        navController.navigate(
+                            Screen.AddTransaction.route
+                        )
+                    }
+                ) {
+
+                    Icon(
+                        imageVector = Screen.AddTransaction.icon,
+                        contentDescription = "Add"
                     )
                 }
-            ) {
-                Icon(
-                    imageVector = Screen.AddTransaction.icon,
-                    contentDescription = "Add"
-                )
             }
         }
-    ){
-        padding ->
+
+    ) { padding ->
+
         NavHost(
             navController = navController,
+
             startDestination = Screen.Home.route,
+
             modifier = Modifier.padding(padding)
         ) {
-            composable(Screen.Home.route) {
+
+            composable(
+                Screen.Home.route
+            ) {
+
                 HomeScreen(
                     navController = navController,
                     repository = repository
                 )
             }
-            composable(Screen.AddTransaction.route) {
-                AddTransactionScreen(
-                    navController = navController,
-                    repository = repository
-                )
-            }
-            composable(Screen.Statistics.route) {
+
+            composable(
+                Screen.Statistics.route
+            ) {
+
                 StatisticsScreen(
                     navController = navController,
                     repository = repository
                 )
             }
-            composable(Screen.Settings.route) {
-                SettingsScreen(navController)
+
+            composable(
+                Screen.Settings.route
+            ) {
+
+                SettingsScreen(
+                    navController = navController
+                )
+            }
+
+            composable(
+                Screen.AddTransaction.route
+            ) {
+
+                AddTransactionScreen(
+                    navController = navController,
+                    repository = repository
+                )
             }
         }
     }
