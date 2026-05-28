@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
             db.transactionDao()
         )
         setContent {
-            MaterialTheme {
+            com.renium.sipkasku.ui.theme.SipKasKuTheme {
                 Surface {
                     MainScreen(repository)
                 }
