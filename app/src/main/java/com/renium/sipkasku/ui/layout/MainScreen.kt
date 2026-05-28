@@ -94,7 +94,10 @@ fun MainScreen(
                 )
             }
             composable(Screen.Statistics.route) {
-                StatisticsScreen(navController)
+                StatisticsScreen(
+                    navController = navController,
+                    repository = repository
+                )
             }
             composable(Screen.Settings.route) {
                 SettingsScreen(navController)

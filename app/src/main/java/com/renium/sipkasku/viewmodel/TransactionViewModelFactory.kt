@@ -2,7 +2,6 @@ package com.renium.sipkasku.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-
 import com.renium.sipkasku.data.repository.TransactionRepository
 
 class TransactionViewModelFactory(
@@ -25,6 +24,12 @@ class TransactionViewModelFactory(
                 AddTransactionViewModel::class.java
             ) -> {
                 AddTransactionViewModel(repository) as T
+            }
+
+            modelClass.isAssignableFrom(
+                StatisticsViewModel::class.java
+            ) -> {
+                StatisticsViewModel(repository) as T
             }
 
             else -> {
