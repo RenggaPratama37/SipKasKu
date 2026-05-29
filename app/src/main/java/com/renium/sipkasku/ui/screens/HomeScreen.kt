@@ -9,6 +9,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Sort
 import androidx.navigation.NavController
 import com.renium.sipkasku.data.repository.TransactionRepository
 import com.renium.sipkasku.ui.components.BalanceCard
@@ -29,7 +31,7 @@ fun HomeScreen(
     )
 
     val transactions by viewModel
-        .transactions
+        .visibleTransactions
         .collectAsState()
 
     val balance = transactions.sumOf { transaction ->
@@ -50,10 +52,56 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = "Recent Transactions",
-                style = MaterialTheme.typography.titleLarge
-            )
+            // Header: title + sort
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Recent Transactions",
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                var expanded by remember { mutableStateOf(false) }
+                IconButton(onClick = { expanded = true }) {
+                    Icon(Icons.Default.Sort, contentDescription = "Sort")
+                }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    DropdownMenuItem(text = { Text("Date desc") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.DATE_DESC); expanded = false })
+                    DropdownMenuItem(text = { Text("Date asc") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.DATE_ASC); expanded = false })
+                    DropdownMenuItem(text = { Text("Amount desc") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.AMOUNT_DESC); expanded = false })
+                    DropdownMenuItem(text = { Text("Amount asc") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.AMOUNT_ASC); expanded = false })
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Filter chips row (separate with comfortable padding)
+            val currentFilter by viewModel.currentFilter.collectAsState()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = currentFilter == com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.ALL,
+                    onClick = { viewModel.setFilter(com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.ALL) },
+                    label = { Text("All") }
+                )
+                FilterChip(
+                    selected = currentFilter == com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.INCOME,
+                    onClick = { viewModel.setFilter(com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.INCOME) },
+                    label = { Text("Income") }
+                )
+                FilterChip(
+                    selected = currentFilter == com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.EXPENSE,
+                    onClick = { viewModel.setFilter(com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.EXPENSE) },
+                    label = { Text("Expense") }
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
