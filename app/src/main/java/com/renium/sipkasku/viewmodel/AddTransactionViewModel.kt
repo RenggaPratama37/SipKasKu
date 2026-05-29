@@ -16,7 +16,8 @@ class AddTransactionViewModel(
         title: String,
         amount: Double,
         category: String,
-        isIncome: Boolean
+        isIncome: Boolean,
+        date: Long
     ) {
 
         viewModelScope.launch {
@@ -27,7 +28,7 @@ class AddTransactionViewModel(
                     amount = amount,
                     category = category,
                     isIncome = isIncome,
-                    date = System.currentTimeMillis()
+                    date = date
                 )
             )
         }

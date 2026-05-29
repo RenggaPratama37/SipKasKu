@@ -4,18 +4,19 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.TextRange
 import com.renium.sipkasku.data.repository.TransactionRepository
+import com.renium.sipkasku.utils.formatDate
 import com.renium.sipkasku.viewmodel.AddTransactionViewModel
 import com.renium.sipkasku.viewmodel.TransactionViewModelFactory
-
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -48,6 +49,16 @@ fun AddTransactionScreen(
         mutableStateOf(false)
     }
 
+    var selectedDate by remember {
+        mutableLongStateOf(
+            System.currentTimeMillis()
+        )
+    }
+
+    var showDatePicker by remember {
+        mutableStateOf(false)
+    }
+
     val categories = listOf(
         "Food",
         "Transport",
@@ -76,7 +87,6 @@ fun AddTransactionScreen(
                 style = MaterialTheme.typography.headlineMedium
             )
 
-            // TITLE
             OutlinedTextField(
                 value = title,
                 onValueChange = {
@@ -90,24 +100,31 @@ fun AddTransactionScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // AMOUNT
             OutlinedTextField(
                 value = amount,
+
                 onValueChange = { input ->
+
                     val cleanString = input.text.replace(
                         "[^\\d]".toRegex(),
                         ""
                     )
+
                     if (cleanString.isEmpty()) {
+
                         amount = TextFieldValue("")
+
                     } else {
+
                         val formatted = NumberFormat
                             .getNumberInstance(
                                 Locale("in", "ID")
                             )
                             .format(cleanString.toLong())
+
                         amount = TextFieldValue(
                             text = formatted,
+
                             selection = TextRange(
                                 formatted.length
                             )
@@ -126,7 +143,19 @@ fun AddTransactionScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // CATEGORY DROPDOWN
+            OutlinedButton(
+                onClick = {
+                    showDatePicker = true
+                },
+
+                modifier = Modifier.fillMaxWidth()
+            ) {
+
+                Text(
+                    text = formatDate(selectedDate)
+                )
+            }
+
             ExposedDropdownMenuBox(
                 expanded = expanded,
 
@@ -147,10 +176,9 @@ fun AddTransactionScreen(
                     },
 
                     trailingIcon = {
-                        ExposedDropdownMenuDefaults
-                            .TrailingIcon(
-                                expanded = expanded
-                            )
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = expanded
+                        )
                     },
 
                     modifier = Modifier
@@ -182,7 +210,6 @@ fun AddTransactionScreen(
                 }
             }
 
-            // TYPE CHIP
             Row {
 
                 FilterChip(
@@ -214,7 +241,6 @@ fun AddTransactionScreen(
                 )
             }
 
-            // SAVE BUTTON
             Button(
                 onClick = {
 
@@ -224,8 +250,10 @@ fun AddTransactionScreen(
                         amount = amount.text
                             .replace(".", "")
                             .toDoubleOrNull() ?: 0.0,
+
                         category = selectedCategory,
-                        isIncome = isIncome
+                        isIncome = isIncome,
+                        date = selectedDate
                     )
 
                     navController.popBackStack()
@@ -236,6 +264,41 @@ fun AddTransactionScreen(
 
                 Text("Save")
             }
+        }
+    }
+
+    if (showDatePicker) {
+
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = selectedDate
+        )
+
+        DatePickerDialog(
+            onDismissRequest = {
+                showDatePicker = false
+            },
+
+            confirmButton = {
+
+                TextButton(
+                    onClick = {
+
+                        selectedDate = datePickerState
+                            .selectedDateMillis
+                            ?: System.currentTimeMillis()
+
+                        showDatePicker = false
+                    }
+                ) {
+
+                    Text("OK")
+                }
+            }
+        ) {
+
+            DatePicker(
+                state = datePickerState
+            )
         }
     }
 }
