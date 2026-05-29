@@ -21,7 +21,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     navController: NavController,
-    repository: TransactionRepository
+    repository: TransactionRepository,
+    snackbarHostState: SnackbarHostState
 ) {
     val viewModel: HomeViewModel = viewModel(
         factory = TransactionViewModelFactory(repository)
@@ -35,7 +36,6 @@ fun HomeScreen(
         if (transaction.isIncome) transaction.amount else -transaction.amount
     }
 
-    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -95,10 +95,5 @@ fun HomeScreen(
                 }
             }
         }
-
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
     }
 }

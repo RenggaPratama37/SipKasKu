@@ -9,8 +9,11 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -43,8 +46,15 @@ fun MainScreen(
     val route = currentRoute
         ?.destination
         ?.route
+    
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState
+            )
+        },
 
         topBar = {
 
@@ -142,7 +152,8 @@ fun MainScreen(
 
                 HomeScreen(
                     navController = navController,
-                    repository = repository
+                    repository = repository,
+                    snackbarHostState = snackbarHostState
                 )
             }
 
