@@ -29,4 +29,10 @@ class HomeViewModel(
             repository.deleteTransaction(transaction)
         }
     }
+
+    fun restoreTransaction(transaction: TransactionEntity) {
+    viewModelScope.launch {
+        repository.insertTransaction(transaction)
+    }
+}
 }
