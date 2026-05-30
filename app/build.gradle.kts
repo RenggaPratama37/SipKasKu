@@ -72,6 +72,8 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.core)
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
 
     // Testing
     testImplementation(libs.junit)

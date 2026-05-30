@@ -47,4 +47,47 @@ class AddTransactionViewModel(
             }
         }
     }
+
+    suspend fun trySaveTransaction(
+        title: String,
+        amount: Double,
+        category: String,
+        isIncome: Boolean,
+        date: Long,
+        pocketId: Int? = null
+    ): Boolean {
+        return try {
+            // if this is an expense and pocket provided, ensure sufficient balance
+            if (!isIncome && pocketId != null && pocketRepository != null) {
+                val pocket = pocketRepository.getPocketById(pocketId)
+                if (pocket == null || pocket.balance < amount) {
+                    return false
+                }
+            }
+
+            // perform insert and balance update
+            repository.insertTransaction(
+                TransactionEntity(
+                    title = title,
+                    amount = amount,
+                    category = category,
+                    isIncome = isIncome,
+                    date = date,
+                    pocketId = pocketId
+                )
+            )
+
+            if (pocketId != null && pocketRepository != null) {
+                val delta = if (isIncome) amount else -amount
+                try {
+                    pocketRepository.adjustBalance(pocketId, delta)
+                } catch (_: Throwable) {
+                }
+            }
+
+            true
+        } catch (t: Throwable) {
+            false
+        }
+    }
 }

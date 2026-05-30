@@ -17,6 +17,10 @@ import com.renium.sipkasku.data.repository.SettingsRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
 import com.renium.sipkasku.ui.layout.MainScreen
 import androidx.lifecycle.lifecycleScope
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import java.util.concurrent.TimeUnit
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.Dispatchers
@@ -77,36 +81,15 @@ class MainActivity : ComponentActivity() {
         val settingsRepository = SettingsRepository(applicationContext)
 
         // run simple recurring check on startup: insert transactions for recurrings whose day matches today and haven't run
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val today = Calendar.getInstance()
-                val day = today.get(Calendar.DAY_OF_MONTH)
+        // Schedule daily worker to process recurrings reliably
+        val periodic = PeriodicWorkRequestBuilder<com.renium.sipkasku.work.RecurringWorker>(1, TimeUnit.DAYS)
+            .build()
 
-                val recurrings = recurringRepository.getAll()
-                // collect once
-                recurrings.collect { list ->
-                    list.forEach { r ->
-                        val lastRunDay = if (r.lastRun == 0L) -1 else Calendar.getInstance().apply { timeInMillis = r.lastRun }.get(Calendar.DAY_OF_MONTH)
-                        if (r.dayOfMonth == day && lastRunDay != day) {
-                            // insert transaction
-                            transactionRepository.insertTransaction(
-                                com.renium.sipkasku.data.local.TransactionEntity(
-                                    title = r.title,
-                                    amount = r.amount,
-                                    category = r.category,
-                                    isIncome = r.isIncome,
-                                    date = System.currentTimeMillis()
-                                )
-                            )
-                            // update lastRun
-                            recurringRepository.update(r.copy(lastRun = System.currentTimeMillis()))
-                        }
-                    }
-                }
-            } catch (t: Throwable) {
-                // ignore recurring failures
-            }
-        }
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+            "recurring-worker",
+            ExistingPeriodicWorkPolicy.KEEP,
+            periodic
+        )
 
         setContent {
             val themeMode by settingsRepository.getThemeMode().collectAsState(initial = "AUTO")

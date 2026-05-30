@@ -102,6 +102,7 @@ fun AddTransactionScreen(
 
     // local validation state
     var showValidation by remember { mutableStateOf(false) }
+    var showBalanceError by remember { mutableStateOf(false) }
 
     Scaffold { padding ->
 
@@ -208,9 +209,21 @@ fun AddTransactionScreen(
                             }
                         }
 
-                        viewModel.saveTransaction(title = title, amount = parsed, category = selectedCategory, isIncome = isIncome ?: false, date = selectedDate, pocketId = selectedPocketId)
-                        navController.popBackStack()
+                        // use trySaveTransaction to validate pocket balances for expenses
+                        scope.launch {
+                            val ok = viewModel.trySaveTransaction(title = title, amount = parsed, category = selectedCategory, isIncome = isIncome
+                                ?: false, date = selectedDate, pocketId = selectedPocketId)
+                            if (ok) {
+                                navController.popBackStack()
+                            } else {
+                                showBalanceError = true
+                            }
+                        }
                     }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = if (isIncome == true) incomeColor else expenseColor)) { Text("Save", color = Color.White) }
+
+                    if (showBalanceError) {
+                        Text("Insufficient pocket balance for this expense.", color = expenseColor)
+                    }
                 }
             }
         }
