@@ -53,7 +53,7 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Header: title + sort
+            // Header: title + sort (sort aligned to the right like a file manager)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -65,21 +65,22 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                var expanded by remember { mutableStateOf(false) }
-                IconButton(onClick = { expanded = true }) {
+                // Sort dropdown on the right
+                var sortExpanded by remember { mutableStateOf(false) }
+                IconButton(onClick = { sortExpanded = true }) {
                     Icon(Icons.Default.Sort, contentDescription = "Sort")
                 }
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    DropdownMenuItem(text = { Text("Date desc") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.DATE_DESC); expanded = false })
-                    DropdownMenuItem(text = { Text("Date asc") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.DATE_ASC); expanded = false })
-                    DropdownMenuItem(text = { Text("Amount desc") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.AMOUNT_DESC); expanded = false })
-                    DropdownMenuItem(text = { Text("Amount asc") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.AMOUNT_ASC); expanded = false })
+                DropdownMenu(expanded = sortExpanded, onDismissRequest = { sortExpanded = false }) {
+                    DropdownMenuItem(text = { Text("Date ↓") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.DATE_DESC); sortExpanded = false })
+                    DropdownMenuItem(text = { Text("Date ↑") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.DATE_ASC); sortExpanded = false })
+                    DropdownMenuItem(text = { Text("Amount ↓") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.AMOUNT_DESC); sortExpanded = false })
+                    DropdownMenuItem(text = { Text("Amount ↑") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.AMOUNT_ASC); sortExpanded = false })
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Filter chips row (separate with comfortable padding)
+            // Single row of filter chips (All / Income / Expense)
             val currentFilter by viewModel.currentFilter.collectAsState()
             Row(
                 modifier = Modifier
@@ -102,37 +103,6 @@ fun HomeScreen(
                     onClick = { viewModel.setFilter(com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.EXPENSE) },
                     label = { Text("Expense") }
                 )
-            }
-       Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Recent Transactions",
-                    style = MaterialTheme.typography.titleLarge
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                // Filter chips
-                val currentFilter = remember { mutableStateOf("ALL") }
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    FilterChip(selected = false, onClick = { viewModel.setFilter(com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.ALL); currentFilter.value = "ALL" }, label = { Text("All") })
-                    FilterChip(selected = false, onClick = { viewModel.setFilter(com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.INCOME); currentFilter.value = "IN" }, label = { Text("Income") })
-                    FilterChip(selected = false, onClick = { viewModel.setFilter(com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.EXPENSE); currentFilter.value = "EX" }, label = { Text("Expense") })
-                }
-
-                // Sort dropdown
-                var expanded by remember { mutableStateOf(false) }
-                IconButton(onClick = { expanded = true }) {
-                    Icon(Icons.Default.Sort, contentDescription = "Sort")
-                }
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    DropdownMenuItem(text = { Text("Date desc") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.DATE_DESC); expanded = false })
-                    DropdownMenuItem(text = { Text("Date asc") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.DATE_ASC); expanded = false })
-                    DropdownMenuItem(text = { Text("Amount desc") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.AMOUNT_DESC); expanded = false })
-                    DropdownMenuItem(text = { Text("Amount asc") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.AMOUNT_ASC); expanded = false })
-                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
