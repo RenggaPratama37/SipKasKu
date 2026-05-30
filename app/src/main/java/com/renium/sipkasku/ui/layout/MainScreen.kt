@@ -29,7 +29,8 @@ import com.renium.sipkasku.ui.screens.StatisticsScreen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    repository: TransactionRepository
+    repository: TransactionRepository,
+    pocketRepository: com.renium.sipkasku.data.repository.PocketRepository? = null
 ) {
 
     val navController = rememberNavController()
@@ -153,7 +154,8 @@ fun MainScreen(
                 HomeScreen(
                     navController = navController,
                     repository = repository,
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackbarHostState,
+                    pocketRepository = pocketRepository
                 )
             }
 
@@ -182,7 +184,8 @@ fun MainScreen(
 
                 AddTransactionScreen(
                     navController = navController,
-                    repository = repository
+                    repository = repository,
+                    pocketRepository = pocketRepository
                 )
             }
         }

@@ -3,9 +3,11 @@ package com.renium.sipkasku.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.renium.sipkasku.data.repository.TransactionRepository
+import com.renium.sipkasku.data.repository.PocketRepository
 
 class TransactionViewModelFactory(
-    private val repository: TransactionRepository
+    private val repository: TransactionRepository,
+    private val pocketRepository: PocketRepository? = null
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(
@@ -23,7 +25,7 @@ class TransactionViewModelFactory(
             modelClass.isAssignableFrom(
                 AddTransactionViewModel::class.java
             ) -> {
-                AddTransactionViewModel(repository) as T
+                AddTransactionViewModel(repository, pocketRepository) as T
             }
 
             modelClass.isAssignableFrom(

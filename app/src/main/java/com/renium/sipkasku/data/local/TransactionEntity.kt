@@ -11,5 +11,6 @@ data class TransactionEntity(
     val amount: Double,
     val category: String,
     val isIncome: Boolean,
-    val date: Long
+    val date: Long,
+    val pocketId: Int? = null
 )

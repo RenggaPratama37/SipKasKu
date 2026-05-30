@@ -24,7 +24,8 @@ import java.util.Locale
 @Composable
 fun AddTransactionScreen(
     navController: NavController,
-    repository: TransactionRepository
+    repository: TransactionRepository,
+    pocketRepository: com.renium.sipkasku.data.repository.PocketRepository? = null
 ) {
 
     var title by rememberSaveable {
@@ -41,8 +42,9 @@ fun AddTransactionScreen(
         mutableStateOf("Food")
     }
 
+    // null = not chosen yet. true = income, false = expense
     var isIncome by rememberSaveable {
-        mutableStateOf(false)
+        mutableStateOf<Boolean?>(null)
     }
 
     var expanded by remember {
@@ -68,8 +70,13 @@ fun AddTransactionScreen(
     )
 
     val viewModel: AddTransactionViewModel = viewModel(
-        factory = TransactionViewModelFactory(repository)
+        factory = TransactionViewModelFactory(repository, pocketRepository)
     )
+
+    // load pockets if repository provided
+    val pockets by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList<com.renium.sipkasku.data.local.Pocket>()) }
+
+    var selectedPocketId by rememberSaveable { mutableStateOf<Int?>(null) }
 
     Scaffold { padding ->
 
@@ -97,7 +104,8 @@ fun AddTransactionScreen(
                     Text("Title")
                 },
 
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = isIncome != null
             )
 
             OutlinedTextField(
@@ -140,7 +148,8 @@ fun AddTransactionScreen(
                     keyboardType = KeyboardType.Number
                 ),
 
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = isIncome != null
             )
 
             OutlinedButton(
@@ -148,7 +157,8 @@ fun AddTransactionScreen(
                     showDatePicker = true
                 },
 
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = isIncome != null
             ) {
 
                 Text(
@@ -183,7 +193,8 @@ fun AddTransactionScreen(
 
                     modifier = Modifier
                         .menuAnchor()
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    enabled = isIncome != null
                 )
 
                 ExposedDropdownMenu(
@@ -213,7 +224,7 @@ fun AddTransactionScreen(
             Row {
 
                 FilterChip(
-                    selected = !isIncome,
+                    selected = isIncome == false,
 
                     onClick = {
                         isIncome = false
@@ -229,7 +240,7 @@ fun AddTransactionScreen(
                 )
 
                 FilterChip(
-                    selected = isIncome,
+                    selected = isIncome == true,
 
                     onClick = {
                         isIncome = true
@@ -239,6 +250,43 @@ fun AddTransactionScreen(
                         Text("Income")
                     }
                 )
+            }
+
+            // Pocket selection (optional)
+            if (pocketRepository != null) {
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                var pocketExpanded by remember { mutableStateOf(false) }
+
+                ExposedDropdownMenuBox(
+                    expanded = pocketExpanded,
+                    onExpandedChange = { pocketExpanded = !pocketExpanded }
+                ) {
+                    OutlinedTextField(
+                        value = pockets.firstOrNull { it.id == selectedPocketId }?.name ?: "Select pocket",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Pocket") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = pocketExpanded) },
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                        enabled = isIncome != null
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = pocketExpanded,
+                        onDismissRequest = { pocketExpanded = false }
+                    ) {
+                        pockets.forEach { pocket ->
+                            DropdownMenuItem(text = { Text(pocket.name) }, onClick = {
+                                selectedPocketId = pocket.id
+                                pocketExpanded = false
+                            })
+                        }
+                    }
+                }
             }
 
             Button(
@@ -252,14 +300,16 @@ fun AddTransactionScreen(
                             .toDoubleOrNull() ?: 0.0,
 
                         category = selectedCategory,
-                        isIncome = isIncome,
-                        date = selectedDate
+                        isIncome = isIncome ?: false,
+                        date = selectedDate,
+                        pocketId = selectedPocketId
                     )
 
                     navController.popBackStack()
                 },
 
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = isIncome != null
             ) {
 
                 Text("Save")
