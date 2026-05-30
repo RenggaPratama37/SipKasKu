@@ -163,15 +163,33 @@ fun StatisticsScreen(
         Spacer(modifier = Modifier.height(12.dp))
         Text("Cashflow (Monthly)", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            val maxValue = cashflow.maxOfOrNull {
+                kotlin.math.abs(it.amount)
+            }?.coerceAtLeast(1.0) ?: 1.0
             cashflow.forEach { point ->
+                val normalized = (kotlin.math.abs(point.amount) / maxValue).toFloat()
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    val value = point.amount
-                    val normalized = (kotlin.math.abs(value) / (cashflow.maxOfOrNull { kotlin.math.abs(it.amount) }?.coerceAtLeast(1.0) ?: 1.0)).toFloat()
-                    LinearProgressIndicator(progress = normalized, modifier = Modifier.height(8.dp).width(80.dp))
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(point.label)
-                    Text(formatRupiah(point.amount))
+                    LinearProgressIndicator(
+                        progress = { normalized },
+                        modifier = Modifier
+                        .width(100.dp)
+                        .height(10.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        point.label,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = formatRupiah(point.amount),
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
         }
