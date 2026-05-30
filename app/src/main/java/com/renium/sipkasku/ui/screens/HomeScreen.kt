@@ -35,6 +35,10 @@ fun HomeScreen(
         .visibleTransactions
         .collectAsState()
 
+    // load pockets map if repository provided
+    val pocketsList by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList<com.renium.sipkasku.data.local.Pocket>()) }
+    val pocketsMap = remember(pocketsList) { pocketsList.associateBy { it.id } }
+
     val balance = transactions.sumOf { transaction ->
         if (transaction.isIncome) transaction.amount else -transaction.amount
     }
@@ -125,6 +129,7 @@ fun HomeScreen(
 
                         SwipeableTransactionItem(
                             transaction = transaction,
+                            pocketName = transaction.pocketId?.let { pocketsMap[it]?.name },
                             onDelete = {
 
                                 viewModel.deleteTransaction(transaction)

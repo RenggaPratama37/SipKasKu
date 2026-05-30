@@ -8,10 +8,13 @@ import androidx.compose.ui.unit.dp
 import com.renium.sipkasku.data.local.TransactionEntity
 import androidx.compose.ui.graphics.Color
 import com.renium.sipkasku.utils.formatRupiah
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
 fun TransactionItem(
-    transaction: TransactionEntity
+    transaction: TransactionEntity,
+    pocketName: String? = null
 ) {
     Card(
         modifier = Modifier.fillMaxWidth()
@@ -22,14 +25,21 @@ fun TransactionItem(
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(transaction.title)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(transaction.title, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (!pocketName.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(pocketName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+
             Text(
                 text = formatRupiah(transaction.amount),
                 color =
-                    if (transaction.isIncome)
-                        Color.Green
-                    else
-                        Color.Red
+                if (transaction.isIncome)
+                    Color.Green
+                else
+                    Color.Red
             )
         }
     }

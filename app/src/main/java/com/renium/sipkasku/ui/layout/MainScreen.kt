@@ -30,7 +30,10 @@ import com.renium.sipkasku.ui.screens.StatisticsScreen
 @Composable
 fun MainScreen(
     repository: TransactionRepository,
-    pocketRepository: com.renium.sipkasku.data.repository.PocketRepository? = null
+    pocketRepository: com.renium.sipkasku.data.repository.PocketRepository? = null,
+    categoryRepository: com.renium.sipkasku.data.repository.CategoryRepository? = null,
+    recurringRepository: com.renium.sipkasku.data.repository.RecurringRepository? = null,
+    settingsRepository: com.renium.sipkasku.data.repository.SettingsRepository? = null
 ) {
 
     val navController = rememberNavController()
@@ -174,7 +177,11 @@ fun MainScreen(
             ) {
 
                 SettingsScreen(
-                    navController = navController
+                    navController = navController,
+                    pocketRepository = pocketRepository,
+                    categoryRepository = categoryRepository,
+                    recurringRepository = recurringRepository,
+                    settingsRepository = settingsRepository
                 )
             }
 
@@ -185,7 +192,9 @@ fun MainScreen(
                 AddTransactionScreen(
                     navController = navController,
                     repository = repository,
-                    pocketRepository = pocketRepository
+                    pocketRepository = pocketRepository,
+                    categoryRepository = categoryRepository,
+                    settingsRepository = settingsRepository
                 )
             }
         }

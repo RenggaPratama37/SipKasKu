@@ -36,7 +36,8 @@ import androidx.compose.foundation.layout.width
 @Composable
 fun SwipeableTransactionItem(
     transaction: TransactionEntity,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    pocketName: String? = null
 ) {
 
     var offsetX by remember {
@@ -118,9 +119,10 @@ fun SwipeableTransactionItem(
                     )
                 }
         ) {
-            TransactionItem(
-                transaction = transaction
-            )
+                TransactionItem(
+                    transaction = transaction,
+                    pocketName = pocketName
+                )
         }
     }
 }
