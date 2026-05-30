@@ -2,6 +2,8 @@ package com.renium.sipkasku.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -61,27 +63,28 @@ fun StatisticsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    Column(
+    LazyColumn(
         modifier = Modifier
+            .fillMaxWidth()
             .padding(16.dp),
-
-        verticalArrangement =
-            Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            IconButton(onClick = {
-                scope.launch {
-                    val file = exportTransactionsToCsv(context, viewModel.transactions.value)
-                    // simple feedback; in-app sharing can be added later
+        item {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                IconButton(onClick = {
+                    scope.launch {
+                        val file = exportTransactionsToCsv(context, viewModel.transactions.value)
+                        // simple feedback; in-app sharing can be added later
+                    }
+                }) {
+                    Icon(Icons.Default.FileDownload, contentDescription = "Export CSV")
                 }
-            }) {
-                Icon(Icons.Default.FileDownload, contentDescription = "Export CSV")
             }
         }
 
-        // Summary header: Income / Expense / Balance
-        Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item {
+            // Summary header: Income / Expense / Balance
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
@@ -124,72 +127,76 @@ fun StatisticsScreen(
                     }
                 }
             }
-
-        // Monthly grouped list (Future Feature 1)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("Group by Month", style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(4.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            monthly.forEach { m ->
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(m.yearMonth, style = MaterialTheme.typography.titleSmall)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text("Income: ${formatRupiah(m.income)}")
-                        Text("Expense: ${formatRupiah(m.expense)}")
-                        Text("Items: ${m.itemsCount}")
-                    }
-                }
-            }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-        Text("Weekly Statistics", style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            weekly.forEach { w ->
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(w.weekLabel)
-                        Column {
-                            Text("Income: ${formatRupiah(w.income)}")
-                            Text("Expense: ${formatRupiah(w.expense)}")
-                        }
-                    }
-                }
-            }
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Group by Month", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(4.dp))
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-        Text("Cashflow (Monthly)", style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            val maxValue = cashflow.maxOfOrNull {
-                kotlin.math.abs(it.amount)
-            }?.coerceAtLeast(1.0) ?: 1.0
-            cashflow.forEach { point ->
-                val normalized = (kotlin.math.abs(point.amount) / maxValue).toFloat()
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    LinearProgressIndicator(
-                        progress = { normalized },
-                        modifier = Modifier
-                        .width(100.dp)
-                        .height(10.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        point.label,
-                        style = MaterialTheme.typography.bodySmall
-                    )
+        items(monthly) { m ->
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(m.yearMonth, style = MaterialTheme.typography.titleSmall)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = formatRupiah(point.amount),
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    Text("Income: ${formatRupiah(m.income)}")
+                    Text("Expense: ${formatRupiah(m.expense)}")
+                    Text("Items: ${m.itemsCount}")
+                }
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text("Weekly Statistics", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        items(weekly) { w ->
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(w.weekLabel)
+                    Column {
+                        Text("Income: ${formatRupiah(w.income)}")
+                        Text("Expense: ${formatRupiah(w.expense)}")
+                    }
+                }
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text("Cashflow (Monthly)", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                val maxValue = cashflow.maxOfOrNull {
+                    kotlin.math.abs(it.amount)
+                }?.coerceAtLeast(1.0) ?: 1.0
+                cashflow.forEach { point ->
+                    val normalized = (kotlin.math.abs(point.amount) / maxValue).toFloat()
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        LinearProgressIndicator(
+                            progress = { normalized },
+                            modifier = Modifier
+                                .width(100.dp)
+                                .height(10.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            point.label,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = formatRupiah(point.amount),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
             }
         }
