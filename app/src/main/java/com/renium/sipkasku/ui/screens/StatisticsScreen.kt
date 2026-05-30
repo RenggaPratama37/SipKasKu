@@ -38,8 +38,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.progressSemantics
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun StatisticsScreen(
@@ -154,54 +161,79 @@ fun StatisticsScreen(
         }
 
         items(weekly) { w ->
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(w.weekLabel)
-                    Column {
-                        Text("Income: ${formatRupiah(w.income)}")
-                        Text("Expense: ${formatRupiah(w.expense)}")
-                    }
-                }
-            }
+            WeeklySummaryCard(summary = w)
         }
 
         item {
             Spacer(modifier = Modifier.height(12.dp))
             Text("Cashflow (Monthly)", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                val maxValue = cashflow.maxOfOrNull {
-                    kotlin.math.abs(it.amount)
-                }?.coerceAtLeast(1.0) ?: 1.0
-                cashflow.forEach { point ->
-                    val normalized = (kotlin.math.abs(point.amount) / maxValue).toFloat()
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        LinearProgressIndicator(
-                            progress = { normalized },
-                            modifier = Modifier
-                                .width(100.dp)
-                                .height(10.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            point.label,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = formatRupiah(point.amount),
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
-            }
+            CashflowChart(cashflow = cashflow)
         }
 
         // End of stats - no additional summary cards here (already shown above)
     }
 
+}
+
+@Composable
+private fun WeeklySummaryCard(summary: com.renium.sipkasku.viewmodel.WeeklySummary) {
+    Card(modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = 4.dp)) {
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(summary.weekLabel, style = MaterialTheme.typography.titleSmall)
+                Spacer(modifier = Modifier.height(4.dp))
+                // Weekly model does not include item count currently; show summary subtitle
+                Text("Weekly summary", style = MaterialTheme.typography.bodySmall)
+            }
+
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    formatRupiah(summary.income),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    formatRupiah(summary.expense),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CashflowChart(cashflow: List<com.renium.sipkasku.viewmodel.CashflowPoint>) {
+    val maxValue = cashflow.maxOfOrNull { kotlin.math.abs(it.amount) }?.coerceAtLeast(1.0) ?: 1.0
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        cashflow.forEach { point ->
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                val fraction = (kotlin.math.abs(point.amount) / maxValue).toFloat().coerceIn(0f, 1f)
+                val barColor = if (point.amount >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                Box(modifier = Modifier.size(width = 44.dp, height = 140.dp), contentAlignment = Alignment.BottomCenter) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        val barHeight = size.height * fraction
+                        val barWidth = size.width * 0.6f
+                        val left = (size.width - barWidth) / 2f
+                        drawRoundRect(color = barColor, topLeft = androidx.compose.ui.geometry.Offset(left, size.height - barHeight), size = Size(barWidth, barHeight), cornerRadius = CornerRadius(8f, 8f))
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(point.label, style = MaterialTheme.typography.bodySmall)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(formatRupiah(point.amount), style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
 }
