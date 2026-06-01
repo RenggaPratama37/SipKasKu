@@ -25,6 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import com.renium.sipkasku.data.repository.TransactionRepository
 import com.renium.sipkasku.utils.formatDate
 import com.renium.sipkasku.viewmodel.AddTransactionViewModel
@@ -87,10 +89,11 @@ fun AddTransactionScreen(
         factory = TransactionViewModelFactory(repository, pocketRepository)
     )
 
-    // load pockets if repository provided
+    // load pockets if repository provided (pocket is mandatory)
     val pockets by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList<com.renium.sipkasku.data.local.Pocket>()) }
 
-    val pocketMandatory by settingsRepository?.isPocketMandatory()?.collectAsState(initial = false) ?: remember { mutableStateOf(false) }
+    // pocket mandatory enforced
+    val pocketMandatory = true
 
     var selectedPocketId by rememberSaveable { mutableStateOf<Int?>(null) }
     val scope = rememberCoroutineScope()
@@ -103,6 +106,11 @@ fun AddTransactionScreen(
     // local validation state
     var showValidation by remember { mutableStateOf(false) }
     var showBalanceError by remember { mutableStateOf(false) }
+
+    // parsed amount (raw number) for validation and balance checks
+    val parsedAmount: Double = amount.text.replace(".", "").toDoubleOrNull() ?: 0.0
+    val selectedPocketBalance: Double = pockets.firstOrNull { it.id == selectedPocketId }?.balance ?: 0.0
+    val insufficientBalance = (isIncome == false) && selectedPocketId != null && parsedAmount > selectedPocketBalance
 
     Scaffold { padding ->
 
@@ -170,15 +178,32 @@ fun AddTransactionScreen(
                         }
                     }
 
-                    // Pocket selection
+                    // Pocket selection (mandatory)
                     if (pocketRepository != null) {
                         var pocketExpanded by remember { mutableStateOf(false) }
-                        ExposedDropdownMenuBox(expanded = pocketExpanded, onExpandedChange = { pocketExpanded = !pocketExpanded }) {
-                            OutlinedTextField(value = pockets.firstOrNull { it.id == selectedPocketId }?.name ?: "Select pocket (optional)", onValueChange = {}, readOnly = true, label = { Text("Pocket") }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = pocketExpanded) }, modifier = Modifier.menuAnchor().fillMaxWidth())
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                            ExposedDropdownMenuBox(expanded = pocketExpanded, onExpandedChange = { pocketExpanded = !pocketExpanded }, modifier = Modifier.weight(1f)) {
+                                val selectedPocket = pockets.firstOrNull { it.id == selectedPocketId }
+                                val pocketLabel = selectedPocket?.let { "${it.name} — ${com.renium.sipkasku.utils.formatRupiah(it.balance)}" } ?: "Select pocket"
+                                OutlinedTextField(value = pocketLabel, onValueChange = {}, readOnly = true, label = { Text("Pocket") }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = pocketExpanded) }, modifier = Modifier.menuAnchor().fillMaxWidth())
 
-                            ExposedDropdownMenu(expanded = pocketExpanded, onDismissRequest = { pocketExpanded = false }) {
-                                pockets.forEach { pocket -> DropdownMenuItem(text = { Text(pocket.name) }, onClick = { selectedPocketId = pocket.id; pocketExpanded = false }) }
+                                ExposedDropdownMenu(expanded = pocketExpanded, onDismissRequest = { pocketExpanded = false }) {
+                                    if (pockets.isEmpty()) {
+                                        DropdownMenuItem(text = { Text("No pockets yet") }, onClick = { pocketExpanded = false })
+                                    } else {
+                                        pockets.forEach { pocket -> DropdownMenuItem(text = { Text("${pocket.name} — ${com.renium.sipkasku.utils.formatRupiah(pocket.balance)}") }, onClick = { selectedPocketId = pocket.id; pocketExpanded = false }) }
+                                    }
+                                }
                             }
+
+                            // quick add pocket button
+                            IconButton(onClick = { showCreatePocketDialog = true }) {
+                                Icon(imageVector = Icons.Filled.Add, contentDescription = "Add pocket")
+                            }
+                        }
+
+                        if (pockets.isEmpty()) {
+                            Text("No pockets found. Please create one.", color = expenseColor)
                         }
                     }
 
@@ -189,41 +214,44 @@ fun AddTransactionScreen(
                         else if (amt <= 0.0) Text("Please enter an amount greater than zero", color = expenseColor)
                     }
 
-                    Button(onClick = {
-                        val parsed = amount.text.replace(".", "").toDoubleOrNull() ?: 0.0
-                        if (title.isBlank() || parsed <= 0.0) {
-                            showValidation = true
-                            return@Button
-                        }
+                    // Disable Save when pocket not chosen (mandatory) or insufficient balance
+                    val saveEnabled = !(pocketMandatory && selectedPocketId == null) && !insufficientBalance
 
-                        if (pocketMandatory) {
-                            if (pockets.isEmpty()) {
-                                // show inline create pocket dialog
-                                showCreatePocketDialog = true
-                                return@Button
-                            }
+                    if (pocketMandatory && selectedPocketId == null) {
+                        Text("Pocket is required", color = expenseColor)
+                    }
 
-                            if (selectedPocketId == null) {
+                    if (insufficientBalance) {
+                        Text("Insufficient pocket balance for this expense.", color = expenseColor)
+                    }
+
+                    Button(
+                        onClick = {
+                            val parsed = amount.text.replace(".", "").toDoubleOrNull() ?: 0.0
+                            if (title.isBlank() || parsed <= 0.0) {
                                 showValidation = true
                                 return@Button
                             }
-                        }
 
-                        // use trySaveTransaction to validate pocket balances for expenses
-                        scope.launch {
-                            val ok = viewModel.trySaveTransaction(title = title, amount = parsed, category = selectedCategory, isIncome = isIncome
-                                ?: false, date = selectedDate, pocketId = selectedPocketId)
-                            if (ok) {
-                                navController.popBackStack()
-                            } else {
-                                showBalanceError = true
+                            if (pocketMandatory && selectedPocketId == null) {
+                                showValidation = true
+                                return@Button
                             }
-                        }
-                    }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = if (isIncome == true) incomeColor else expenseColor)) { Text("Save", color = Color.White) }
 
-                    if (showBalanceError) {
-                        Text("Insufficient pocket balance for this expense.", color = expenseColor)
-                    }
+                            scope.launch {
+                                val ok = viewModel.trySaveTransaction(title = title, amount = parsed, category = selectedCategory, isIncome = isIncome
+                                    ?: false, date = selectedDate, pocketId = selectedPocketId)
+                                if (ok) {
+                                    navController.popBackStack()
+                                } else {
+                                    showBalanceError = true
+                                }
+                            }
+                        },
+                        enabled = saveEnabled,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = if (isIncome == true) incomeColor else expenseColor)
+                    ) { Text("Save", color = Color.White) }
                 }
             }
         }
