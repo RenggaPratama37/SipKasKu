@@ -49,7 +49,7 @@ fun AddTransactionScreen(
 
     var amount by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
 
-    var selectedCategory by rememberSaveable { mutableStateOf("Food") }
+    var selectedCategory by rememberSaveable { mutableStateOf("") }
 
     // null = not chosen yet. true = income, false = expense
     var isIncome by rememberSaveable { mutableStateOf<Boolean?>(null) }
@@ -150,7 +150,12 @@ fun AddTransactionScreen(
 
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-                    OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Title") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(
+                        value = title, 
+                        onValueChange = { title = it },
+                        label = { Text("Title") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
                     OutlinedTextField(
                         value = amount,
@@ -171,7 +176,19 @@ fun AddTransactionScreen(
                     OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) { Text(text = formatDate(selectedDate)) }
 
                     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-                        OutlinedTextField(value = selectedCategory, onValueChange = {}, readOnly = true, label = { Text("Category") }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }, modifier = Modifier.menuAnchor().fillMaxWidth())
+                        OutlinedTextField(
+                            value = selectedCategory,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Category") },
+                            placeholder = { Text("Select category") },
+                            trailingIcon = { 
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                            },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
 
                         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                             categories.forEach { category -> DropdownMenuItem(text = { Text(category) }, onClick = { selectedCategory = category; expanded = false }) }
@@ -210,8 +227,11 @@ fun AddTransactionScreen(
                     // validation helper
                     if (showValidation) {
                         val amt = amount.text.replace(".", "").toDoubleOrNull() ?: 0.0
-                        if (title.isBlank()) Text("Please enter a title", color = expenseColor)
-                        else if (amt <= 0.0) Text("Please enter an amount greater than zero", color = expenseColor)
+                        when {
+                            title.isBlank() -> Text("Please enter a title", color = expenseColor)
+                            amt <= 0.0 -> Text("Please enter an amount greater than zero", color = expenseColor)
+                            selectedCategory.isBlank() -> Text("Please select a category", color = expenseColor)
+                        }
                     }
 
                     // Disable Save when pocket not chosen (mandatory) or insufficient balance
@@ -228,7 +248,7 @@ fun AddTransactionScreen(
                     Button(
                         onClick = {
                             val parsed = amount.text.replace(".", "").toDoubleOrNull() ?: 0.0
-                            if (title.isBlank() || parsed <= 0.0) {
+                            if (title.isBlank() || parsed <= 0.0 || selectedCategory.isBlank()) {
                                 showValidation = true
                                 return@Button
                             }
