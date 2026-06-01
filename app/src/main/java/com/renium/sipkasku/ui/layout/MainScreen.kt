@@ -25,6 +25,10 @@ import com.renium.sipkasku.ui.screens.AddTransactionScreen
 import com.renium.sipkasku.ui.screens.HomeScreen
 import com.renium.sipkasku.ui.screens.SettingsScreen
 import com.renium.sipkasku.ui.screens.StatisticsScreen
+import com.renium.sipkasku.ui.screens.settings.AppearanceSettingsScreen
+import com.renium.sipkasku.ui.screens.settings.PocketSettingsScreen
+import com.renium.sipkasku.ui.screens.settings.CategorySettingsScreen
+import com.renium.sipkasku.ui.screens.settings.RecurringSettingsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -178,9 +182,6 @@ fun MainScreen(
 
                 SettingsScreen(
                     navController = navController,
-                    pocketRepository = pocketRepository,
-                    categoryRepository = categoryRepository,
-                    recurringRepository = recurringRepository,
                     settingsRepository = settingsRepository
                 )
             }
@@ -197,6 +198,34 @@ fun MainScreen(
                     settingsRepository = settingsRepository
                 )
             }
+
+            composable("appearance_settings") {
+                AppearanceSettingsScreen(
+                    settingsRepository = settingsRepository
+                )
+            }
+
+            composable("pocket_settings") {
+                PocketSettingsScreen(
+                    pocketRepository = pocketRepository,
+                    settingsRepository = settingsRepository
+                )
+            }
+
+            composable("category_settings") {
+                CategorySettingsScreen(
+                    categoryRepository = categoryRepository,
+                    settingsRepository = settingsRepository
+                )
+            }
+
+            composable("recurring_settings") {
+                RecurringSettingsScreen(
+                    recurringRepository = recurringRepository,
+                    settingsRepository = settingsRepository
+                )
+            }
+
         }
     }
 }
