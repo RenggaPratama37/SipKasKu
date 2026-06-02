@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,60 +45,63 @@ fun PocketSettingsScreen(
         mutableStateOf("")
     }
 
-    val pocketMandatory by settingsRepository?.isPocketMandatory()
-        ?.collectAsState(initial = false)
-        ?: remember {
-            mutableStateOf(false)
-        }
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
-        item {
-
-            Text(
-                "Pocket Settings",
-                style = MaterialTheme.typography.titleLarge
+        item{
+            Text (
+                text = "Pocket Settings",
+                style = MaterialTheme.typography.headlineSmall
+            )
+            Text (
+                text = "Manage Pocket where balance and transaction separated",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            pockets.forEach { p ->
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+            Spacer(modifier = Modifier.height(24.dp))
+            pockets.forEach { 
+                p -> ElevatedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 10.dp)
                 ) {
-
-                    Column(
-                        modifier = Modifier.weight(1f)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(p.name)
-
-                        Text(
-                            "Balance: ${p.balance}",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                pocketRepository?.deletePocket(p)
-                            }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = p.name,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text (
+                                text = "Balance: ${p.balance}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = null
-                        )
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    pocketRepository?.deletePocket(p)
+                                }
+                            }
+                        ) {
+                           Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete Pocket",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
                 }
             }
-
             OutlinedTextField(
                 value = newPocketName,
                 onValueChange = {
@@ -106,41 +110,35 @@ fun PocketSettingsScreen(
                 label = {
                     Text("Pocket Name")
                 },
+                placeholder = {
+                    Text("Example: Cash")
+                },
+                singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
-
+            Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = {
-                    if (newPocketName.isNotBlank()) {
-
+                    if(newPocketName.isNotBlank()) {
                         scope.launch {
                             pocketRepository?.insertPocket(
                                 Pocket(name = newPocketName)
                             )
-
                             newPocketName = ""
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                enabled = newPocketName.isNotBlank(),
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = 
+                        if (newPocketName.isBlank())
+                            MaterialTheme.colorScheme.surfaceVariant
+                        else
+                            MaterialTheme.colorScheme.primary
+                )
             ) {
                 Text("Add Pocket")
-            }
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Checkbox(
-                    checked = pocketMandatory,
-                    onCheckedChange = { checked ->
-                        scope.launch {
-                            settingsRepository?.setPocketMandatory(checked)
-                        }
-                    }
-                )
-
-                Text("Require pocket for transactions")
             }
         }
     }
