@@ -1,20 +1,17 @@
 package com.renium.sipkasku.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Repeat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,79 +23,95 @@ fun SettingsScreen(
     LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
         item {
-            HorizontalDivider()
-            ListItem(
-                headlineContent = {
-                    Text("Appearance", style = MaterialTheme.typography.titleMedium)
-                },
-                supportingContent = {
-                    Text("Set App theme mode")
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min=72.dp)
-                    .clickable {
+            Card (
+                onClick = {
                     navController.navigate("appearance_settings")
-                }
-            )
-            HorizontalDivider()
+                },
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                )
+            ) {
+                ListItem(
+                    leadingContent = {
+                        Icon(Icons.Default.Palette, null)
+                    },
+                    headlineContent = {
+                        Text("Appearance", style = MaterialTheme.typography.titleMedium)
+                    },
+                    supportingContent = {
+                        Text("Set app theme mode")
+                    }
+                )
+            }
         }
 
         item {
-            HorizontalDivider()
-            ListItem(
-                headlineContent = {
-                    Text("Pocket")
+            Card (
+                onClick = {
+                    navController.navigate("Pocket_settings")
                 },
-                supportingContent = {
-                    Text("Set up pockets where money is saved, received, and spent")
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min=72.dp)
-                    .clickable {
-                        navController.navigate("pocket_settings")
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                )
+            ) {
+                ListItem(
+                    leadingContent = {
+                        Icon(Icons.Default.AccountBalanceWallet, null)
+                    },
+                    headlineContent = {
+                        Text("Pocket", style = MaterialTheme.typography.titleMedium)
+                    },
+                    supportingContent = {
+                        Text("Set up pockets where money is saved, received, and spent")
                     }
-            )
-            HorizontalDivider()
+                )
+            }
         }
 
         item {
-            HorizontalDivider()
-            ListItem(
-                headlineContent = {
-                    Text("Category")
+            Card (
+                onClick = {
+                    navController.navigate("category_settings")
                 },
-                supportingContent = {
-                    Text("Manage income and expense categories")
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min=72.dp)
-                    .clickable {
-                        navController.navigate("category_settings")
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                )
+            ) {
+                ListItem(
+                    leadingContent = {
+                        Icon(Icons.Default.Category, null)
+                    },
+                    headlineContent = {
+                        Text("Category", style = MaterialTheme.typography.titleMedium)
+                    },
+                    supportingContent = {
+                        Text("Manage income and income categories")
                     }
-            )
-            HorizontalDivider()
+                )
+            }
         }
 
         item {
-            HorizontalDivider()
-            ListItem(
-                headlineContent = {
-                    Text("Recurring")
+            Card (
+                onClick = {
+                    navController.navigate("recurring_settings")
                 },
-                supportingContent = {
-                    Text("Set up systematic income and expense")
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min=72.dp)
-                    .clickable {
-                        navController.navigate("recurring_settings")
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                )
+            ) {
+                ListItem(
+                    leadingContent = {
+                        Icon(Icons.Default.Repeat, null)
+                    },
+                    headlineContent = {
+                        Text("Systematic Recurring Transaction", style = MaterialTheme.typography.titleMedium)
+                    },
+                    supportingContent = {
+                        Text("Set up systematic income and expense")
                     }
-            )
-            HorizontalDivider()
+                )
+            }
         }
 
     }
