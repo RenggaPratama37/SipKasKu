@@ -19,7 +19,7 @@ class TransactionViewModelFactory(
             modelClass.isAssignableFrom(
                 HomeViewModel::class.java
             ) -> {
-                HomeViewModel(repository) as T
+                HomeViewModel(repository,pocketRepository) as T
             }
 
             modelClass.isAssignableFrom(

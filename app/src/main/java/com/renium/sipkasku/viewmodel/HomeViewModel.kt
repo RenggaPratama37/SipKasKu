@@ -8,12 +8,14 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import com.renium.sipkasku.data.local.TransactionEntity
 import com.renium.sipkasku.data.repository.TransactionRepository
+import com.renium.sipkasku.data.repository.PocketRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    private val repository: TransactionRepository
+    private val repository: TransactionRepository,
+    private val pocketRepository: PocketRepository? = null
 ) : ViewModel() {
 
     enum class FilterType { ALL, INCOME, EXPENSE }
@@ -59,6 +61,18 @@ class HomeViewModel(
     ) {
         viewModelScope.launch {
             repository.deleteTransaction(transaction)
+            transaction.pocketId?.let { 
+                pocketId -> 
+                    val delta = 
+                        if(transaction.isIncome)
+                            -transaction.amount
+                        else
+                            transaction.amount
+                    pocketRepository?.adjustBalance(
+                        pocketId,
+                        delta
+                    )
+            }
         }
     }
 
@@ -80,6 +94,18 @@ class HomeViewModel(
     fun restoreTransaction(transaction: TransactionEntity) {
     viewModelScope.launch {
         repository.insertTransaction(transaction)
+        transaction.pocketId?.let {
+            pocketId ->
+                val delta = 
+                    if(transaction.isIncome)
+                        transaction.amount
+                    else
+                        -transaction.amount
+                pocketRepository?.adjustBalance(
+                    pocketId,
+                    delta
+                )
+        }
     }
 }
 }

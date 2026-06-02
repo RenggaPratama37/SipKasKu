@@ -28,7 +28,7 @@ fun HomeScreen(
     pocketRepository: com.renium.sipkasku.data.repository.PocketRepository? = null
 ) {
     val viewModel: HomeViewModel = viewModel(
-        factory = TransactionViewModelFactory(repository)
+        factory = TransactionViewModelFactory(repository, pocketRepository)
     )
 
     val transactions by viewModel
