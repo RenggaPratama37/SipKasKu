@@ -37,6 +37,20 @@ interface TransactionDao {
     )
 
     @Query("""
+        UPDATE transactions
+        SET pocketId = :toPocketId
+        WHERE pocketId = :fromPocketId
+    """)
+    suspend fun updatePocketId(fromPocketId: Int, toPocketId: Int)
+
+    @Query("""
+        UPDATE transactions
+        SET categoryId = :toCategoryId
+        WHERE categoryId = :fromCategoryId
+    """)
+    suspend fun updateCategoryId(fromCategoryId: Int, toCategoryId: Int)
+
+    @Query("""
         SELECT * FROM transactions
         ORDER BY date DESC
     """)

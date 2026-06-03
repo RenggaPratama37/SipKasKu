@@ -42,6 +42,7 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
 
         val db = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "money_manager_db")
             .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .fallbackToDestructiveMigration()
             .build()
 
         val transactionRepository = TransactionRepository(db.transactionDao())

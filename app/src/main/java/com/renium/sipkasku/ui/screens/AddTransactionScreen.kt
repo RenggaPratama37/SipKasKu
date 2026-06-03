@@ -105,7 +105,7 @@ fun AddTransactionScreen(
     var selectedPocketId by rememberSaveable { mutableStateOf<Int?>(null) }
     val scope = rememberCoroutineScope()
     var showCreatePocketDialog by remember { mutableStateOf(false) }
-    var newPocketName by rememberSaveable { mutableStateOf("") }
+    var pocketName by rememberSaveable { mutableStateOf("") }
 
     val incomeColor = Color(0xFF2E7D32)
     val expenseColor = Color(0xFFD32F2F)
@@ -292,16 +292,16 @@ fun AddTransactionScreen(
                 Column {
                     Text("You have no pockets. Create one to continue.")
                     Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(value = newPocketName, onValueChange = { newPocketName = it }, label = { Text("Pocket name") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = pocketName, onValueChange = { pocketName = it }, label = { Text("Pocket name") }, modifier = Modifier.fillMaxWidth())
                 }
             },
             confirmButton = {
                 TextButton(onClick = {
-                    if (newPocketName.isNotBlank()) {
+                    if (pocketName.isNotBlank()) {
                         scope.launch {
-                            val id = pocketRepository.insertPocket(com.renium.sipkasku.data.local.Pocket(name = newPocketName))
+                            val id = pocketRepository.insertPocket(com.renium.sipkasku.data.local.Pocket(name = pocketName))
                             selectedPocketId = id.toInt()
-                            newPocketName = ""
+                            pocketName = ""
                             showCreatePocketDialog = false
                         }
                     }

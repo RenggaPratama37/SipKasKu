@@ -25,13 +25,9 @@ class TransactionRepository(
     suspend fun deleteByPocketId(
         pocketId: Int
     ) = dao.deleteByPocketId(pocketId)
-
-    suspend fun deleteByCategory(
-        categoryName: String
-    ) {
-        // find category id by name and delete by id
-        // repository does not have category DAO; caller should pass id instead. Keep method for compatibility but no-op.
-    }
-
     suspend fun deleteByCategoryId(categoryId: Int) = dao.deleteByCategoryId(categoryId)
+
+    suspend fun updatePocketId(fromPocketId: Int, toPocketId: Int) = dao.updatePocketId(fromPocketId, toPocketId)
+
+    suspend fun updateCategoryId(fromCategoryId: Int, toCategoryId: Int) = dao.updateCategoryId(fromCategoryId, toCategoryId)
 }
