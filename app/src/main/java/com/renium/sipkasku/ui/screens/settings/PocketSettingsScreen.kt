@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun PocketSettingsScreen(
+    transactionRepository: com.renium.sipkasku.data.repository.TransactionRepository?,
     pocketRepository: PocketRepository?,
     settingsRepository: SettingsRepository?
 ) {
@@ -89,6 +90,9 @@ fun PocketSettingsScreen(
                         IconButton(
                             onClick = {
                                 scope.launch {
+                                    transactionRepository?.deleteByPocketId(
+                                        p.id
+                                    )
                                     pocketRepository?.deletePocket(p)
                                 }
                             }

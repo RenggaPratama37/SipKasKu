@@ -21,4 +21,12 @@ class TransactionRepository(
     ) {
         dao.deleteTransaction(transaction)
     }
+
+    suspend fun deleteByPocketId(
+        pocketId: Int
+    ) = dao.deleteByPocketId(pocketId)
+
+    suspend fun deleteByCategory(
+        categoryName: String
+    ) = dao.deleteByCategory(categoryName)
 }

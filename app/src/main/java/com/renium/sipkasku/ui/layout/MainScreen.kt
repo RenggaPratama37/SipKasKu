@@ -207,6 +207,7 @@ fun MainScreen(
 
             composable("pocket_settings") {
                 PocketSettingsScreen(
+                    transactionRepository = repository,
                     pocketRepository = pocketRepository,
                     settingsRepository = settingsRepository
                 )
@@ -214,6 +215,7 @@ fun MainScreen(
 
             composable("category_settings") {
                 CategorySettingsScreen(
+                    transactionRepository = repository,
                     categoryRepository = categoryRepository,
                     settingsRepository = settingsRepository
                 )

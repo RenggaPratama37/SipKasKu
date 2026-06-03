@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun CategorySettingsScreen(
+    transactionRepository: com.renium.sipkasku.data.repository.TransactionRepository?,
     categoryRepository : CategoryRepository?,
     settingsRepository : SettingsRepository?
 ) {
@@ -55,7 +56,7 @@ fun CategorySettingsScreen(
             incomeCategories.forEach { c ->
                 Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(c.name, modifier = Modifier.weight(1f))
-                    IconButton(onClick = { scope.launch { categoryRepository?.delete(c) } }) { Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete") }
+                    IconButton(onClick = { scope.launch { transactionRepository?.deleteByCategory(c.name); categoryRepository?.delete(c) } }) { Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete") }
                 }
             }
 
@@ -63,7 +64,7 @@ fun CategorySettingsScreen(
             expenseCategories.forEach { c ->
                 Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(c.name, modifier = Modifier.weight(1f))
-                    IconButton(onClick = { scope.launch { categoryRepository?.delete(c) } }) { Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete") }
+                    IconButton(onClick = { scope.launch { transactionRepository?.deleteByCategory(c.name); categoryRepository?.delete(c) } }) { Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete") }
                 }
             }
 

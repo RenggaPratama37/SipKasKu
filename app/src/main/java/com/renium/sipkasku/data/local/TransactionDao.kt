@@ -21,6 +21,22 @@ interface TransactionDao {
     )
 
     @Query("""
+        DELETE FROM transactions
+        WHERE pocketId = :pocketId
+    """)
+    suspend fun deleteByPocketId(
+        pocketId: Int
+    )
+
+    @Query("""
+        DELETE FROM transactions
+        WHERE category = :categoryName
+    """)
+    suspend fun deleteByCategory(
+        categoryName: String
+    )
+
+    @Query("""
         SELECT * FROM transactions
         ORDER BY date DESC
     """)
