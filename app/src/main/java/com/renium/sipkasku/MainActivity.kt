@@ -32,42 +32,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                // Add pocket table
-                database.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `pockets` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `balance` REAL NOT NULL, `createdAt` INTEGER NOT NULL)"
-                )
-
-                // Add pocketId column to transactions
-                try {
-                    database.execSQL("ALTER TABLE `transactions` ADD COLUMN `pocketId` INTEGER")
-                } catch (t: Throwable) {
-                    // ignore if column exists
-                }
-            }
-        }
-
-        val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                // create categories table
-                database.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `categories` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `type` TEXT NOT NULL)"
-                )
-
-                // create recurrings table
-                database.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `recurrings` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `amount` REAL NOT NULL, `category` TEXT NOT NULL, `isIncome` INTEGER NOT NULL, `dayOfMonth` INTEGER NOT NULL, `lastRun` INTEGER NOT NULL)"
-                )
-            }
-        }
-
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java,
             "money_manager_db"
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3)
-            .fallbackToDestructiveMigration()
+        ).fallbackToDestructiveMigration()
             .build()
 
         val transactionRepository = TransactionRepository(
