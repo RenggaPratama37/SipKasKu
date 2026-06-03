@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
@@ -51,7 +52,8 @@ import androidx.compose.ui.graphics.Color
 @Composable
 fun StatisticsScreen(
     navController: NavController,
-    repository: TransactionRepository
+    repository: TransactionRepository,
+    categoryRepository: com.renium.sipkasku.data.repository.CategoryRepository? = null
 ) {
     val viewModel: StatisticsViewModel = viewModel(
         factory = TransactionViewModelFactory(repository)
@@ -69,6 +71,8 @@ fun StatisticsScreen(
     val cashflow by viewModel.cashflowPoints.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val cats = categoryRepository?.getAll()?.collectAsState(initial = emptyList())?.value ?: emptyList()
+    val catsMap = remember(cats) { cats.associate { it.id to it.name } }
 
     LazyColumn(
         modifier = Modifier
@@ -80,9 +84,9 @@ fun StatisticsScreen(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 IconButton(onClick = {
                     scope.launch {
-                        val file = exportTransactionsToCsv(context, viewModel.transactions.value)
-                        // simple feedback; in-app sharing can be added later
-                    }
+                            val file = exportTransactionsToCsv(context, viewModel.transactions.value, catsMap)
+                            // simple feedback; in-app sharing can be added later
+                        }
                 }) {
                     Icon(Icons.Default.FileDownload, contentDescription = "Export CSV")
                 }

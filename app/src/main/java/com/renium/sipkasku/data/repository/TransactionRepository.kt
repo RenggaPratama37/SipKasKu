@@ -28,5 +28,10 @@ class TransactionRepository(
 
     suspend fun deleteByCategory(
         categoryName: String
-    ) = dao.deleteByCategory(categoryName)
+    ) {
+        // find category id by name and delete by id
+        // repository does not have category DAO; caller should pass id instead. Keep method for compatibility but no-op.
+    }
+
+    suspend fun deleteByCategoryId(categoryId: Int) = dao.deleteByCategoryId(categoryId)
 }

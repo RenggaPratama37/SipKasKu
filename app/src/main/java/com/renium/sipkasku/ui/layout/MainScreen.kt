@@ -172,7 +172,8 @@ fun MainScreen(
 
                 StatisticsScreen(
                     navController = navController,
-                    repository = repository
+                    repository = repository,
+                    categoryRepository = categoryRepository
                 )
             }
 

@@ -55,11 +55,14 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
             recurrings.forEach { r ->
                 val lastRunDay = if (r.lastRun == 0L) -1 else Calendar.getInstance().apply { timeInMillis = r.lastRun }.get(Calendar.DAY_OF_MONTH)
                 if (r.dayOfMonth == day && lastRunDay != day) {
+                    // map recurring.category (name) -> categoryId if exists
+                    val cat = db.categoryDao().getByName(r.category)
+                    val categoryId = cat?.id
                     transactionRepository.insertTransaction(
                         TransactionEntity(
                             title = r.title,
                             amount = r.amount,
-                            category = r.category,
+                            categoryId = categoryId,
                             isIncome = r.isIncome,
                             date = System.currentTimeMillis()
                         )

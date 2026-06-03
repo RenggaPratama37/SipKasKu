@@ -16,7 +16,7 @@ class AddTransactionViewModel(
     fun saveTransaction(
         title: String,
         amount: Double,
-        category: String,
+        categoryId: Int?,
         isIncome: Boolean,
         date: Long,
         pocketId: Int? = null
@@ -24,11 +24,11 @@ class AddTransactionViewModel(
 
         viewModelScope.launch {
 
-            repository.insertTransaction(
+                repository.insertTransaction(
                 TransactionEntity(
                     title = title,
                     amount = amount,
-                    category = category,
+                    categoryId = categoryId,
                     isIncome = isIncome,
                     date = date,
                     pocketId = pocketId
@@ -51,7 +51,7 @@ class AddTransactionViewModel(
     suspend fun trySaveTransaction(
         title: String,
         amount: Double,
-        category: String,
+        categoryId: Int?,
         isIncome: Boolean,
         date: Long,
         pocketId: Int? = null
@@ -70,7 +70,7 @@ class AddTransactionViewModel(
                 TransactionEntity(
                     title = title,
                     amount = amount,
-                    category = category,
+                    categoryId = categoryId,
                     isIncome = isIncome,
                     date = date,
                     pocketId = pocketId

@@ -30,10 +30,10 @@ interface TransactionDao {
 
     @Query("""
         DELETE FROM transactions
-        WHERE category = :categoryName
+        WHERE categoryId = :categoryId
     """)
-    suspend fun deleteByCategory(
-        categoryName: String
+    suspend fun deleteByCategoryId(
+        categoryId: Int
     )
 
     @Query("""

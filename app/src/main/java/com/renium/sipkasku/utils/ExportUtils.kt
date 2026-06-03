@@ -10,7 +10,8 @@ import java.util.Locale
 
 suspend fun exportTransactionsToCsv(
     context: Context,
-    transactions: List<TransactionEntity>
+    transactions: List<TransactionEntity>,
+    categoriesMap: Map<Int, String> = emptyMap()
 ): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
     val file = File(context.cacheDir, "transactions_$time.csv")
@@ -20,7 +21,8 @@ suspend fun exportTransactionsToCsv(
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         transactions.forEach { t ->
             val safeTitle = t.title.replace("\"", "\"\"")
-            val safeCategory = t.category.replace("\"", "\"\"")
+            val categoryName = t.categoryId?.let { categoriesMap[it] } ?: ""
+            val safeCategory = categoryName.replace("\"", "\"\"")
             val line = buildString {
                 append(t.id)
                 append(',')

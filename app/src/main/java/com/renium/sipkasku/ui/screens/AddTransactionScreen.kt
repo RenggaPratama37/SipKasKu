@@ -85,6 +85,13 @@ fun AddTransactionScreen(
         null -> listOf()
     }
 
+    // map selectedCategory name -> categoryId
+    val categoryId = when (isIncome) {
+        true -> incomeCategories.firstOrNull { it.name == selectedCategory }?.id
+        false -> expenseCategories.firstOrNull { it.name == selectedCategory }?.id
+        null -> null
+    }
+
     val viewModel: AddTransactionViewModel = viewModel(
         factory = TransactionViewModelFactory(repository, pocketRepository)
     )
@@ -259,7 +266,7 @@ fun AddTransactionScreen(
                             }
 
                             scope.launch {
-                                val ok = viewModel.trySaveTransaction(title = title, amount = parsed, category = selectedCategory, isIncome = isIncome
+                                val ok = viewModel.trySaveTransaction(title = title, amount = parsed, categoryId = categoryId, isIncome = isIncome
                                     ?: false, date = selectedDate, pocketId = selectedPocketId)
                                 if (ok) {
                                     navController.popBackStack()

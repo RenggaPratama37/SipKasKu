@@ -9,7 +9,7 @@ data class TransactionEntity(
     val id: Int = 0,
     val title: String,
     val amount: Double,
-    val category: String,
+    val categoryId: Int? = null,
     val isIncome: Boolean,
     val date: Long,
     val pocketId: Int? = null
