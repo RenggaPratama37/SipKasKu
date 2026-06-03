@@ -52,7 +52,7 @@ fun AddTransactionScreen(
     var selectedCategory by rememberSaveable { mutableStateOf("") }
 
     // null = not chosen yet. true = income, false = expense
-    var isIncome by rememberSaveable { mutableStateOf<Boolean?>(null) }
+    var isIncome by rememberSaveable { mutableStateOf(false) }
 
     var expanded by remember {
         mutableStateOf(false)
