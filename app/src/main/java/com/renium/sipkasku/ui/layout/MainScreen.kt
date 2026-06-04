@@ -65,10 +65,8 @@ fun MainScreen(
         },
 
         topBar = {
-
             TopAppBar(
                 title = {
-
                     Text(
                         text =
                             items.find {
@@ -80,40 +78,28 @@ fun MainScreen(
         },
 
         bottomBar = {
-
             NavigationBar {
-
                 items.forEach { screen ->
-
                     NavigationBarItem(
-
                         selected =
                             route == screen.route,
-
                         onClick = {
-
                             navController.navigate(
                                 screen.route
                             ) {
-
                                 popUpTo(
                                     Screen.Home.route
                                 )
-
                                 launchSingleTop = true
                             }
                         },
-
                         icon = {
-
                             Icon(
                                 imageVector = screen.icon,
                                 contentDescription = screen.title
                             )
                         },
-
                         label = {
-
                             Text(screen.title)
                         }
                     )
@@ -126,16 +112,13 @@ fun MainScreen(
             if (
                 route == Screen.Home.route
             ) {
-
                 FloatingActionButton(
                     onClick = {
-
                         navController.navigate(
                             Screen.AddTransaction.route
                         )
                     }
                 ) {
-
                     Icon(
                         imageVector = Screen.AddTransaction.icon,
                         contentDescription = "Add"
@@ -143,17 +126,13 @@ fun MainScreen(
                 }
             }
         }
-
     ) { padding ->
 
         NavHost(
             navController = navController,
-
             startDestination = Screen.Home.route,
-
             modifier = Modifier.padding(padding)
         ) {
-
             composable(
                 Screen.Home.route
             ) {
@@ -169,7 +148,6 @@ fun MainScreen(
             composable(
                 Screen.Statistics.route
             ) {
-
                 StatisticsScreen(
                     navController = navController,
                     repository = repository,
@@ -180,7 +158,6 @@ fun MainScreen(
             composable(
                 Screen.Settings.route
             ) {
-
                 SettingsScreen(
                     navController = navController,
                     settingsRepository = settingsRepository
@@ -190,7 +167,6 @@ fun MainScreen(
             composable(
                 Screen.AddTransaction.route
             ) {
-
                 AddTransactionScreen(
                     navController = navController,
                     repository = repository,
@@ -228,7 +204,6 @@ fun MainScreen(
                     settingsRepository = settingsRepository
                 )
             }
-
         }
     }
 }
