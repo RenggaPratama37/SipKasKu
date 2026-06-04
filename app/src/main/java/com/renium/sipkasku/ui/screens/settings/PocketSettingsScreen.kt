@@ -53,10 +53,6 @@ fun PocketSettingsScreen(
     ) {
         item{
             Text (
-                text = "Pocket Settings",
-                style = MaterialTheme.typography.headlineSmall
-            )
-            Text (
                 text = "Manage Pocket where balance and transaction separated",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

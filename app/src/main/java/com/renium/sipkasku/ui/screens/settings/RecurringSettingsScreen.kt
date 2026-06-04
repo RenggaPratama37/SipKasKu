@@ -51,8 +51,6 @@ fun RecurringSettingsScreen(
             .padding(16.dp)
     ) {
         item {
-            HorizontalDivider()
-            Text("Scheduled Inputs (Recurring)", style = MaterialTheme.typography.titleMedium)
             recurrings.forEach { r ->
                 Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(modifier = Modifier.weight(1f)) {

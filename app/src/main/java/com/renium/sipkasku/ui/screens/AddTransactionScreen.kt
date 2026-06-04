@@ -129,8 +129,6 @@ fun AddTransactionScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            Text(text = "Add Transaction", style = MaterialTheme.typography.headlineMedium)
-
             // Segmented toggle: Expense / Income
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(

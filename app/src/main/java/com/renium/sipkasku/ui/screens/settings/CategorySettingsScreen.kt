@@ -49,8 +49,6 @@ fun CategorySettingsScreen(
             .padding(16.dp)
     ) {
         item {
-            HorizontalDivider()
-            Text("Categories", style = MaterialTheme.typography.titleMedium)
 
             Text("Income Categories", style = MaterialTheme.typography.titleSmall)
             incomeCategories.forEach { c ->

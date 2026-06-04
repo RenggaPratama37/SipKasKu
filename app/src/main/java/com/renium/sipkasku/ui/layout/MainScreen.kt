@@ -68,10 +68,19 @@ fun MainScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text =
-                            items.find {
-                                it.route == route
-                            }?.title ?: "SipKasKu"
+                        text = when(route) {
+                            Screen.Home.route -> "SipKasKu"
+                            Screen.Statistics.route -> "Statistics"
+                            Screen.Settings.route -> "Settings"
+                            Screen.AddTransaction.route -> "Add Transaction"
+
+                            "pocket_settings" -> "Pocket Settings"
+                            "category_settings" -> "Category Settings"
+                            "appearance_settings" -> "Appearance Settings"
+                            "recurring_settings" -> "Systematic Recurring Transaction"
+
+                            else -> "SipKasku"
+                        }
                     )
                 }
             )

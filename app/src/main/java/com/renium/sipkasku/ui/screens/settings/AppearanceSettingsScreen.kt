@@ -34,13 +34,6 @@ fun AppearanceSettingsScreen(
     ) {
 
         Text(
-            text = "Appearance",
-            style = MaterialTheme.typography.headlineSmall
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
             text = "Choose how the application theme is displayed.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
