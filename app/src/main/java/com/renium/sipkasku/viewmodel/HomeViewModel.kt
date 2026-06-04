@@ -92,20 +92,20 @@ class HomeViewModel(
         get() = _sort
 
     fun restoreTransaction(transaction: TransactionEntity) {
-    viewModelScope.launch {
-        repository.insertTransaction(transaction)
-        transaction.pocketId?.let {
-            pocketId ->
-                val delta = 
-                    if(transaction.isIncome)
-                        transaction.amount
-                    else
-                        -transaction.amount
-                pocketRepository?.adjustBalance(
-                    pocketId,
-                    delta
-                )
+        viewModelScope.launch {
+            repository.insertTransaction(transaction)
+            transaction.pocketId?.let {
+                pocketId ->
+                    val delta = 
+                        if(transaction.isIncome)
+                            transaction.amount
+                        else
+                            -transaction.amount
+                    pocketRepository?.adjustBalance(
+                        pocketId,
+                        delta
+                    )
+            }
         }
     }
-}
 }
