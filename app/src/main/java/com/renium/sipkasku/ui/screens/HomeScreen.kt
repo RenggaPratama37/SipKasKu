@@ -35,6 +35,10 @@ fun HomeScreen(
         .visibleTransactions
         .collectAsState()
 
+    val currentSort by viewModel
+        .currentSort
+        .collectAsState()
+    
     // load pockets map if repository provided
     val pocketsList by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList<com.renium.sipkasku.data.local.Pocket>()) }
     val pocketsMap = remember(pocketsList) { pocketsList.associateBy { it.id } }
@@ -70,15 +74,87 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.weight(1f))
 
                 // Sort dropdown on the right
-                var sortExpanded by remember { mutableStateOf(false) }
-                IconButton(onClick = { sortExpanded = true }) {
-                    Icon(Icons.Default.Sort, contentDescription = "Sort")
-                }
-                DropdownMenu(expanded = sortExpanded, onDismissRequest = { sortExpanded = false }) {
-                    DropdownMenuItem(text = { Text("Date ↓") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.DATE_DESC); sortExpanded = false })
-                    DropdownMenuItem(text = { Text("Date ↑") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.DATE_ASC); sortExpanded = false })
-                    DropdownMenuItem(text = { Text("Amount ↓") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.AMOUNT_DESC); sortExpanded = false })
-                    DropdownMenuItem(text = { Text("Amount ↑") }, onClick = { viewModel.setSort(com.renium.sipkasku.viewmodel.HomeViewModel.SortType.AMOUNT_ASC); sortExpanded = false })
+                var sortExpanded by remember { mutableStateOf(false)}
+                Box{
+                    ElevatedCard(
+                        onClick = {
+                            sortExpanded = true
+                        }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(
+                                horizontal = 12.dp,
+                                vertical = 8.dp
+                            ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                when(currentSort){
+                                    HomeViewModel.SortType.DATE_DESC -> "Date ↓"
+                                    HomeViewModel.SortType.DATE_ASC -> "Date ↑"
+                                    HomeViewModel.SortType.AMOUNT_DESC -> "Amount ↓"
+                                    HomeViewModel.SortType.AMOUNT_ASC -> "Amount ↑"
+                                }
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Icon(
+                                Icons.Default.Sort,
+                                contentDescription = null
+                            )
+                        }
+                    }
+                    DropdownMenu(
+                        expanded = sortExpanded,
+                        onDismissRequest = { sortExpanded = false }) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        if (
+                                            currentSort == HomeViewModel.SortType.DATE_ASC || currentSort == HomeViewModel.SortType.DATE_DESC) {
+                                                if (currentSort == HomeViewModel.SortType.DATE_ASC)
+                                                    "Date ↑"
+                                                else
+                                                    "Date ↓"
+                                            } else {
+                                                    "Date"
+                                                }
+                                        )
+                                    },
+                                    onClick = {
+                                        viewModel.setSort(
+                                            when (currentSort) {
+                                                HomeViewModel.SortType.DATE_ASC ->
+                                                HomeViewModel.SortType.DATE_DESC
+                                                else ->
+                                                HomeViewModel.SortType.DATE_ASC
+                                            }
+                                        )
+                                    sortExpanded = false
+                                    }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        if (currentSort == HomeViewModel.SortType.AMOUNT_ASC || currentSort == HomeViewModel.SortType.AMOUNT_DESC) {
+                                            if (currentSort == HomeViewModel.SortType.AMOUNT_ASC) "Amount ↑"
+                                            else "Amount ↓"
+                                        } else {
+                                            "Amount"
+                                        }
+                                    )
+                                },
+                            onClick = {
+                                viewModel.setSort(
+                                    when (currentSort) {
+                                        HomeViewModel.SortType.AMOUNT_ASC ->
+                                        HomeViewModel.SortType.AMOUNT_DESC
+                                    else -> HomeViewModel.SortType.AMOUNT_ASC
+                                    }
+                                )
+                                sortExpanded = false
+                            }
+                        )
+                    }
                 }
             }
 
