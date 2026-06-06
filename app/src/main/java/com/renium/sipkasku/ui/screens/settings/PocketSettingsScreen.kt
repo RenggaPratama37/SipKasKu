@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import com.renium.sipkasku.data.local.Pocket
 import com.renium.sipkasku.data.repository.PocketRepository
 import com.renium.sipkasku.data.repository.SettingsRepository
+import com.renium.sipkasku.utils.formatRupiah
 import kotlinx.coroutines.launch
 
 @Composable
@@ -78,7 +79,7 @@ fun PocketSettingsScreen(
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Text (
-                                text = "Balance: ${p.balance}",
+                                text = "Balance: ${formatRupiah(p.balance)}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
