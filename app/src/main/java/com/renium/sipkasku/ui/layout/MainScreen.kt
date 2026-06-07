@@ -19,6 +19,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -33,6 +36,8 @@ import com.renium.sipkasku.ui.screens.settings.AppearanceSettingsScreen
 import com.renium.sipkasku.ui.screens.settings.PocketSettingsScreen
 import com.renium.sipkasku.ui.screens.settings.CategorySettingsScreen
 import com.renium.sipkasku.ui.screens.settings.RecurringSettingsScreen
+import com.renium.sipkasku.data.local.Category
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,6 +72,18 @@ fun MainScreen(
     )
 
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val scope = rememberCoroutineScope()
+
+    val incomeCategories by categoryRepository
+        ?.getByType("INCOME")
+        ?.collectAsState(initial = emptyList())
+        ?: remember { androidx.compose.runtime.mutableStateOf(emptyList()) }
+
+    val expenseCategories by categoryRepository
+        ?.getByType("EXPENSE")
+        ?.collectAsState(initial = emptyList())
+        ?: remember { androidx.compose.runtime.mutableStateOf(emptyList()) }
 
     Scaffold(
         snackbarHost = {
@@ -227,9 +244,25 @@ fun MainScreen(
 
             composable("category_settings") {
                 CategorySettingsScreen(
-                    transactionRepository = repository,
-                    categoryRepository = categoryRepository,
-                    settingsRepository = settingsRepository
+                    incomeCategories = incomeCategories,
+                    expenseCategories = expenseCategories,
+
+                    onAddCategory = { name, type ->
+                        scope.launch {
+                            categoryRepository?.insert(
+                                Category(
+                                    name = name,
+                                    type = type
+                                )
+                            )
+                        }
+                    },
+
+                    onDeleteCategory = { category ->
+                        scope.launch {
+                            categoryRepository?.delete(category)
+                        }
+                    }
                 )
             }
 
