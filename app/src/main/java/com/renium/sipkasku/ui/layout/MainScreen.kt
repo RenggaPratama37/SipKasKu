@@ -269,6 +269,8 @@ fun MainScreen(
             composable("recurring_settings") {
                 RecurringSettingsScreen(
                     recurringRepository = recurringRepository,
+                    categoryRepository = categoryRepository,
+                    pocketRepository = pocketRepository,
                     settingsRepository = settingsRepository
                 )
             }
