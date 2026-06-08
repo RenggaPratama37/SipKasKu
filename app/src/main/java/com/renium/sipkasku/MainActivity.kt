@@ -62,11 +62,27 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                try {
+                    // Add new columns to recurrings table for systematic investment plans
+                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `categoryId` INTEGER")
+                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `pocketId` INTEGER")
+                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `frequency` TEXT DEFAULT 'MONTHLY'")
+                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `dayOfWeek` INTEGER")
+                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `isActive` INTEGER DEFAULT 1")
+                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `createdAt` INTEGER DEFAULT 0")
+                } catch (t: Throwable) {
+                    // Columns might already exist
+                }
+            }
+        }
+
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java,
             "money_manager_db"
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
 
         val transactionRepository = TransactionRepository(
             db.transactionDao()

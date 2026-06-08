@@ -8,6 +8,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.renium.sipkasku.data.local.AppDatabase
 import com.renium.sipkasku.data.local.TransactionEntity
+import com.renium.sipkasku.data.local.RecurrenceFrequency
 import com.renium.sipkasku.data.repository.RecurringRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
 import kotlinx.coroutines.flow.first
@@ -40,8 +41,24 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
             }
         }
 
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                try {
+                    // Add new columns to recurrings table
+                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `categoryId` INTEGER")
+                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `pocketId` INTEGER")
+                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `frequency` TEXT DEFAULT 'MONTHLY'")
+                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `dayOfWeek` INTEGER")
+                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `isActive` INTEGER DEFAULT 1")
+                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `createdAt` INTEGER DEFAULT 0")
+                    
+                } catch (t: Throwable) {
+                }
+            }
+        }
+
         val db = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "money_manager_db")
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .build()
 
         val transactionRepository = TransactionRepository(db.transactionDao())
@@ -49,28 +66,82 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
 
         try {
             val today = Calendar.getInstance()
-            val day = today.get(Calendar.DAY_OF_MONTH)
+            val currentDay = today.get(Calendar.DAY_OF_MONTH)
+            val currentDayOfWeek = today.get(Calendar.DAY_OF_WEEK) // 1=Sunday, 2=Monday, etc
+            val currentHour = today.get(Calendar.HOUR_OF_DAY)
 
             val recurrings = recurringRepository.getAll().first()
-            recurrings.forEach { r ->
-                val lastRunDay = if (r.lastRun == 0L) -1 else Calendar.getInstance().apply { timeInMillis = r.lastRun }.get(Calendar.DAY_OF_MONTH)
-                if (r.dayOfMonth == day && lastRunDay != day) {
-                    // map recurring.category (name) -> categoryId if exists
-                    val cat = db.categoryDao().getByName(r.category)
-                    val categoryId = cat?.id
+            
+            recurrings.filter { it.isActive }.forEach { r ->
+                val lastRunCalendar = if (r.lastRun == 0L) {
+                    Calendar.getInstance().apply { timeInMillis = 0 }
+                } else {
+                    Calendar.getInstance().apply { timeInMillis = r.lastRun }
+                }
+                
+                val shouldRun = when (r.frequency) {
+                    RecurrenceFrequency.DAILY.name -> {
+                        // Run once per day (check if lastRun was on a different day)
+                        val lastRunDay = lastRunCalendar.get(Calendar.DAY_OF_YEAR)
+                        val todayDay = today.get(Calendar.DAY_OF_YEAR)
+                        lastRunDay != todayDay
+                    }
+                    
+                    RecurrenceFrequency.WEEKLY.name -> {
+                        // Run on specified day of week
+                        val targetDayOfWeek = r.dayOfWeek ?: 2 // Default Monday if not set
+                        val lastRunDayOfWeek = lastRunCalendar.get(Calendar.DAY_OF_WEEK)
+                        
+                        // Convert: our 1=Monday -> Calendar.DAY_OF_WEEK (1=Sunday, 2=Monday)
+                        val calendarDayOfWeek = if (targetDayOfWeek == 7) 1 else (targetDayOfWeek + 1)
+                        
+                        currentDayOfWeek == calendarDayOfWeek && lastRunDayOfWeek != calendarDayOfWeek
+                    }
+                    
+                    RecurrenceFrequency.MONTHLY.name, RecurrenceFrequency.SPECIFIC_DAY.name -> {
+                        // Run on specific day of month
+                        val targetDay = r.dayOfMonth
+                        val lastRunDay = lastRunCalendar.get(Calendar.DAY_OF_MONTH)
+                        currentDay == targetDay && lastRunDay != targetDay
+                    }
+                    
+                    RecurrenceFrequency.END_OF_MONTH.name -> {
+                        // Run on last day of month
+                        val lastDayOfMonth = today.apply { set(Calendar.DATE, 1) }.let {
+                            it.add(Calendar.MONTH, 1)
+                            it.add(Calendar.DATE, -1)
+                            it.get(Calendar.DAY_OF_MONTH)
+                        }
+                        
+                        val lastRunDay = lastRunCalendar.get(Calendar.DAY_OF_MONTH)
+                        currentDay == lastDayOfMonth && lastRunDay != lastDayOfMonth
+                    }
+                    
+                    else -> false
+                }
+
+                if (shouldRun) {
+                    // Get category ID if categoryId is set, otherwise try to map old 'category' field
+                    val categoryId = r.categoryId
+                    
+                    // Create transaction
                     transactionRepository.insertTransaction(
                         TransactionEntity(
                             title = r.title,
                             amount = r.amount,
                             categoryId = categoryId,
                             isIncome = r.isIncome,
-                            date = System.currentTimeMillis()
+                            date = System.currentTimeMillis(),
+                            pocketId = r.pocketId
                         )
                     )
+                    
+                    // Update lastRun
                     recurringRepository.update(r.copy(lastRun = System.currentTimeMillis()))
                 }
             }
         } catch (t: Throwable) {
+            android.util.Log.e("RecurringWorker", "Error processing recurrings", t)
             return Result.failure()
         }
 

@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [TransactionEntity::class, Pocket::class, com.renium.sipkasku.data.local.Category::class, com.renium.sipkasku.data.local.Recurring::class],
-    version = 3
+    version = 4
 )
 abstract class AppDatabase : RoomDatabase() {
 
