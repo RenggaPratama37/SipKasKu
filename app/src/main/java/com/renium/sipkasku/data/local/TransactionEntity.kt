@@ -13,4 +13,5 @@ data class TransactionEntity(
     val isIncome: Boolean,
     val date: Long,
     val pocketId: Int? = null
+    val recurringId: Int? = null
 )

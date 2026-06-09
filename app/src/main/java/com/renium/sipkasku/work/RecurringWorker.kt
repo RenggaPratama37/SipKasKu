@@ -126,29 +126,45 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
                 }
 
                 if (shouldRun) {
-                    val categoryId = r.categoryId
+                    val startOfDay = Calendar.getInstance().apply () {
+                        set(Calendar.HOUR_OF_DAY,0); set(Calendar.MINUTE,0)
+                        set(Calendar.SECOND,0); set(Calendar.MILLISECOND,0)
+                    }.timeInMillis
                     
-                    // Create transaction
-                    transactionRepository.insertTransaction(
-                        TransactionEntity(
-                            title = r.title,
-                            amount = r.amount,
-                            categoryId = categoryId,
-                            isIncome = r.isIncome,
-                            date = System.currentTimeMillis(),
-                            pocketId = r.pocketId
+                    val endOfDay = Calendar.getInstance().apply() {
+                        set(Calendar.HOUR_OF_DAY,23); set(Calendar.MINUTE,59)
+                        set(Calendar.SECOND,59); set(Calendar.MILLISECOND.999)
+                    }.timeInMillis
+
+                    val alreadyRun = transactionRepository.countByRecurringAndDate(
+                        recurringId = r.id,
+                        startOfDay = startOfDay,
+                        endOfDay = endOfDay
+                    ) > 0
+
+                    if (!alreadyRun) {
+                        transactionRepository.insertTransaction(
+                            TransactionEntity(
+                                title = r.title,
+                                amount = r.amount,
+                                categoryId = r.categoryId,
+                                isIncome = r.isIncome,
+                                date = System.currentTimeMillis(),
+                                pocketId = r.pocketId,
+                                recurringId = r.id
+                            )
                         )
-                    )
 
-                    r.pocketId?.let { pocketId ->
-                        val delta = if (r.isIncome) r.amount else -r.amount
-                        pocketRepository.adjustBalance(pocketId, delta)
+                        r.pocketId?.let { pocketId ->
+                            val delta = if (r.isIncome) r.amount else -r.amount
+                            pocketRepository.adjustBalance(pocketId, delta)
+                        }
+
+                        recurringRepository.update(r.copy(lastRun = System.currentTimeMillis()))
                     }
-
-                    // Update lastRun
-                    recurringRepository.update(r.copy(lastRun = System.currentTimeMillis()))
                 }
             }
+
         } catch (t: Throwable) {
             android.util.Log.e("RecurringWorker", "Error processing recurrings", t)
             return Result.failure()

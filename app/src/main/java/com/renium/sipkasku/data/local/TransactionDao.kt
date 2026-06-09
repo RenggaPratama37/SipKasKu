@@ -41,4 +41,16 @@ interface TransactionDao {
         ORDER BY date DESC
     """)
     fun getAllTransactions(): Flow<List<TransactionEntity>>
+
+    @Query("""
+        SELECT COUNT(*) FROM transactions
+        WHERE recurringId = :recurringId
+        AND date >= :startOfDay
+        AND date <= :endOfDay 
+    """)
+    suspend fun countByRecurringAndDate(
+        recurringId: Int,
+        startOfDay: Long,
+        endOfDay: Long
+    ): Int
 }

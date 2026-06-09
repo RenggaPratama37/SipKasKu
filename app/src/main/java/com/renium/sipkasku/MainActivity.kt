@@ -77,11 +77,19 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE 'transactions' ADD COLUMN 'recurringId' INTEGER DEFAULT NULL"
+                )
+            }
+        }
+
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java,
             "money_manager_db"
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build()
 
         val transactionRepository = TransactionRepository(
             db.transactionDao()
