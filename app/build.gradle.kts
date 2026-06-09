@@ -43,6 +43,7 @@ android {
 dependencies {
 
     implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.remote.creation.core)
     // Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
