@@ -58,6 +58,7 @@ fun CategorySettingsScreen(
     categoryToDelete?.let { category ->
         AlertDialog(
             onDismissRequest = {
+                categoryToDelete = null
             },
             title = {
                 Text("Delete Category")
@@ -69,6 +70,7 @@ fun CategorySettingsScreen(
                 TextButton(
                     onClick = {
                         onDeleteCategory(category)
+                        categoryToDelete = null
                     }
                 ) {
                     Text(
@@ -80,6 +82,7 @@ fun CategorySettingsScreen(
             dismissButton = {
                 TextButton(
                     onClick = {
+                        categoryToDelete = null
                     }
                 ) {
                     Text("Cancel")
@@ -201,6 +204,7 @@ fun CategorySettingsScreen(
                 CategoryItemCard(
                     category = category,
                     onDeleteClick = {
+                        categoryToDelete = category
                     }
                 )
             }
@@ -224,6 +228,7 @@ fun CategorySettingsScreen(
                 CategoryItemCard(
                     category = category,
                     onDeleteClick = {
+                        categoryToDelete = category
                     }
                 )
             }
