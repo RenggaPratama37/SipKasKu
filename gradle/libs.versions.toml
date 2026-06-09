@@ -18,6 +18,7 @@ foundation = "1.11.2"
 activity = "1.8.0"
 foundationLayout = "1.11.2"
 material3 = "1.4.0"
+remoteCreationCore = "1.0.0-alpha11"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -42,6 +43,7 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+androidx-compose-remote-creation-core = { group = "androidx.compose.remote", name = "remote-creation-core", version.ref = "remoteCreationCore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

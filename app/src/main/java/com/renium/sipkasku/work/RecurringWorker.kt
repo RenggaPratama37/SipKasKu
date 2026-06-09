@@ -11,6 +11,7 @@ import com.renium.sipkasku.data.local.TransactionEntity
 import com.renium.sipkasku.data.local.RecurrenceFrequency
 import com.renium.sipkasku.data.repository.RecurringRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
+import com.renium.sipkasku.data.repository.PocketRepository
 import kotlinx.coroutines.flow.first
 import java.util.Calendar
 
@@ -63,6 +64,7 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
 
         val transactionRepository = TransactionRepository(db.transactionDao())
         val recurringRepository = RecurringRepository(db.recurringDao())
+        val pocketRepository = PocketRepository(db.pocketDao())
 
         try {
             val today = Calendar.getInstance()
@@ -97,12 +99,15 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
                         
                         currentDayOfWeek == calendarDayOfWeek && lastRunDayOfWeek != calendarDayOfWeek
                     }
-                    
-                    RecurrenceFrequency.MONTHLY.name, RecurrenceFrequency.SPECIFIC_DAY.name -> {
-                        // Run on specific day of month
-                        val targetDay = r.dayOfMonth
-                        val lastRunDay = lastRunCalendar.get(Calendar.DAY_OF_MONTH)
-                        currentDay == targetDay && lastRunDay != targetDay
+
+                    RecurrenceFrequency.MONTHLY.name -> {
+                        val lastRunMonth = lastRunCalendar.get(Calendar.MONTH)
+                        val lastRunYear = lastRunCalendar.get(Calendar.YEAR)
+                        val todayMonth = today.get(Calendar.MONTH)
+                        val todayYear = today.get(Calendar.YEAR)
+
+                        currentDay == r.dayOfMonth &&
+                                !(lastRunMonth == todayMonth && lastRunYear == todayYear)
                     }
                     
                     RecurrenceFrequency.END_OF_MONTH.name -> {
@@ -121,7 +126,6 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
                 }
 
                 if (shouldRun) {
-                    // Get category ID if categoryId is set, otherwise try to map old 'category' field
                     val categoryId = r.categoryId
                     
                     // Create transaction
@@ -135,7 +139,12 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
                             pocketId = r.pocketId
                         )
                     )
-                    
+
+                    r.pocketId?.let { pocketId ->
+                        val delta = if (r.isIncome) r.amount else -r.amount
+                        pocketRepository.adjustBalance(pocketId, delta)
+                    }
+
                     // Update lastRun
                     recurringRepository.update(r.copy(lastRun = System.currentTimeMillis()))
                 }
