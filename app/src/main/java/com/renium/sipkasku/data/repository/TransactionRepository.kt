@@ -33,5 +33,11 @@ class TransactionRepository(
         // repository does not have category DAO; caller should pass id instead. Keep method for compatibility but no-op.
     }
 
+    suspend fun countByRecurringAndDate(
+        recurringId: Int,
+        startOfDay: Long,
+        endOfDay: Long
+    ): Int = dao.countByRecurringAndDate(recurringId, startOfDay, endOfDay)
+
     suspend fun deleteByCategoryId(categoryId: Int) = dao.deleteByCategoryId(categoryId)
 }
