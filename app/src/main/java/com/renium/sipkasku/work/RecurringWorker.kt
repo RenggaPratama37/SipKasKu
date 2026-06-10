@@ -3,15 +3,12 @@ package com.renium.sipkasku.work
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import androidx.room.Room
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
-import com.renium.sipkasku.data.local.AppDatabase
-import com.renium.sipkasku.data.local.TransactionEntity
+import com.renium.sipkasku.data.local.DatabaseProvider
 import com.renium.sipkasku.data.local.RecurrenceFrequency
+import com.renium.sipkasku.data.local.TransactionEntity
+import com.renium.sipkasku.data.repository.PocketRepository
 import com.renium.sipkasku.data.repository.RecurringRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
-import com.renium.sipkasku.data.repository.PocketRepository
 import kotlinx.coroutines.flow.first
 import java.util.Calendar
 
@@ -19,49 +16,7 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
 
     override suspend fun doWork(): Result {
 
-        val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `pockets` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `balance` REAL NOT NULL, `createdAt` INTEGER NOT NULL)"
-                )
-                try {
-                    database.execSQL("ALTER TABLE `transactions` ADD COLUMN `pocketId` INTEGER")
-                } catch (t: Throwable) {
-                }
-            }
-        }
-
-        val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `categories` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `type` TEXT NOT NULL)"
-                )
-                database.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `recurrings` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `amount` REAL NOT NULL, `category` TEXT NOT NULL, `isIncome` INTEGER NOT NULL, `dayOfMonth` INTEGER NOT NULL, `lastRun` INTEGER NOT NULL)"
-                )
-            }
-        }
-
-        val MIGRATION_3_4 = object : Migration(3, 4) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                try {
-                    // Add new columns to recurrings table
-                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `categoryId` INTEGER")
-                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `pocketId` INTEGER")
-                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `frequency` TEXT DEFAULT 'MONTHLY'")
-                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `dayOfWeek` INTEGER")
-                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `isActive` INTEGER DEFAULT 1")
-                    database.execSQL("ALTER TABLE `recurrings` ADD COLUMN `createdAt` INTEGER DEFAULT 0")
-                    
-                } catch (t: Throwable) {
-                }
-            }
-        }
-
-        val db = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "money_manager_db")
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
-            .build()
-
+        val db = DatabaseProvider.get(applicationContext)
         val transactionRepository = TransactionRepository(db.transactionDao())
         val recurringRepository = RecurringRepository(db.recurringDao())
         val pocketRepository = PocketRepository(db.pocketDao())
@@ -73,14 +28,14 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
             val currentHour = today.get(Calendar.HOUR_OF_DAY)
 
             val recurrings = recurringRepository.getAll().first()
-            
+
             recurrings.filter { it.isActive }.forEach { r ->
                 val lastRunCalendar = if (r.lastRun == 0L) {
                     Calendar.getInstance().apply { timeInMillis = 0 }
                 } else {
                     Calendar.getInstance().apply { timeInMillis = r.lastRun }
                 }
-                
+
                 val shouldRun = when (r.frequency) {
                     RecurrenceFrequency.DAILY.name -> {
                         // Run once per day (check if lastRun was on a different day)
@@ -88,15 +43,15 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
                         val todayDay = today.get(Calendar.DAY_OF_YEAR)
                         lastRunDay != todayDay
                     }
-                    
+
                     RecurrenceFrequency.WEEKLY.name -> {
                         // Run on specified day of week
                         val targetDayOfWeek = r.dayOfWeek ?: 2 // Default Monday if not set
                         val lastRunDayOfWeek = lastRunCalendar.get(Calendar.DAY_OF_WEEK)
-                        
+
                         // Convert: our 1=Monday -> Calendar.DAY_OF_WEEK (1=Sunday, 2=Monday)
                         val calendarDayOfWeek = if (targetDayOfWeek == 7) 1 else (targetDayOfWeek + 1)
-                        
+
                         currentDayOfWeek == calendarDayOfWeek && lastRunDayOfWeek != calendarDayOfWeek
                     }
 
@@ -109,7 +64,7 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
                         currentDay == r.dayOfMonth &&
                                 !(lastRunMonth == todayMonth && lastRunYear == todayYear)
                     }
-                    
+
                     RecurrenceFrequency.END_OF_MONTH.name -> {
                         // Run on last day of month
                         val lastDayOfMonth = today.apply { set(Calendar.DATE, 1) }.let {
@@ -117,11 +72,11 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
                             it.add(Calendar.DATE, -1)
                             it.get(Calendar.DAY_OF_MONTH)
                         }
-                        
+
                         val lastRunDay = lastRunCalendar.get(Calendar.DAY_OF_MONTH)
                         currentDay == lastDayOfMonth && lastRunDay != lastDayOfMonth
                     }
-                    
+
                     else -> false
                 }
 
@@ -130,10 +85,10 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
                         set(Calendar.HOUR_OF_DAY,0); set(Calendar.MINUTE,0)
                         set(Calendar.SECOND,0); set(Calendar.MILLISECOND,0)
                     }.timeInMillis
-                    
+
                     val endOfDay = Calendar.getInstance().apply() {
                         set(Calendar.HOUR_OF_DAY,23); set(Calendar.MINUTE,59)
-                        set(Calendar.SECOND,59); set(Calendar.MILLISECOND.999)
+                        set(Calendar.SECOND,59); set(Calendar.MILLISECOND,999)
                     }.timeInMillis
 
                     val alreadyRun = transactionRepository.countByRecurringAndDate(
