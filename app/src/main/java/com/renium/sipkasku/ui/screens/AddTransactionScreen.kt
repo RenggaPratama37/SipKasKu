@@ -14,6 +14,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -25,10 +26,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.foundation.clickable
+import com.renium.sipkasku.data.local.Category
+import com.renium.sipkasku.data.local.Pocket
+import com.renium.sipkasku.data.repository.CategoryRepository
+import com.renium.sipkasku.data.repository.PocketRepository
+import com.renium.sipkasku.data.repository.SettingsRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
+import com.renium.sipkasku.navigation.Screen.*
 import com.renium.sipkasku.utils.formatDate
+import com.renium.sipkasku.utils.formatRupiah
 import com.renium.sipkasku.viewmodel.AddTransactionViewModel
 import com.renium.sipkasku.viewmodel.TransactionViewModelFactory
 import java.text.NumberFormat
@@ -40,9 +51,9 @@ import kotlinx.coroutines.launch
 fun AddTransactionScreen(
     navController: NavController,
     repository: TransactionRepository,
-    pocketRepository: com.renium.sipkasku.data.repository.PocketRepository? = null,
-    categoryRepository: com.renium.sipkasku.data.repository.CategoryRepository? = null,
-    settingsRepository: com.renium.sipkasku.data.repository.SettingsRepository? = null
+    pocketRepository: PocketRepository? = null,
+    categoryRepository: CategoryRepository? = null,
+    settingsRepository: SettingsRepository? = null
 ) {
 
     var title by rememberSaveable { mutableStateOf("") }
@@ -67,37 +78,40 @@ fun AddTransactionScreen(
     var showDatePicker by remember { mutableStateOf(false) }
 
     // categories loaded from repository if available; fallback to defaults
-    val incomeCategories: List<com.renium.sipkasku.data.local.Category> = if (categoryRepository != null) {
+    val incomeCategories: List<Category> = if (categoryRepository != null) {
         categoryRepository.getByType("INCOME").collectAsState(initial = emptyList()).value
     } else {
-        remember { mutableStateOf(emptyList<com.renium.sipkasku.data.local.Category>()) }.value
+        remember { mutableStateOf(emptyList<Category>()) }.value
     }
 
-    val expenseCategories: List<com.renium.sipkasku.data.local.Category> = if (categoryRepository != null) {
+    val expenseCategories: List<Category> = if (categoryRepository != null) {
         categoryRepository.getByType("EXPENSE").collectAsState(initial = emptyList()).value
     } else {
-        remember { mutableStateOf(emptyList<com.renium.sipkasku.data.local.Category>()) }.value
+        remember { mutableStateOf(emptyList<Category>()) }.value
     }
 
     val categories = when (isIncome) {
-        true -> if (incomeCategories.isEmpty()) listOf("Salary", "Other") else incomeCategories.map { c -> c.name }
-        false -> if (expenseCategories.isEmpty()) listOf("Food", "Transport", "Shopping", "Other") else expenseCategories.map { c -> c.name }
-        null -> listOf()
+        true -> incomeCategories.map { c -> c.name }
+        false ->  expenseCategories.map { c -> c.name }
     }
 
     // map selectedCategory name -> categoryId
     val categoryId = when (isIncome) {
         true -> incomeCategories.firstOrNull { it.name == selectedCategory }?.id
         false -> expenseCategories.firstOrNull { it.name == selectedCategory }?.id
-        null -> null
     }
 
     val viewModel: AddTransactionViewModel = viewModel(
-        factory = TransactionViewModelFactory(repository, pocketRepository)
+        factory = TransactionViewModelFactory(
+            repository,
+            pocketRepository
+        )
     )
 
+    val tooltipState = rememberTooltipState()
+
     // load pockets if repository provided (pocket is mandatory)
-    val pockets by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList<com.renium.sipkasku.data.local.Pocket>()) }
+    val pockets by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList<Pocket>()) }
 
     // pocket mandatory enforced
     val pocketMandatory = true
@@ -106,6 +120,8 @@ fun AddTransactionScreen(
     val scope = rememberCoroutineScope()
     var showCreatePocketDialog by remember { mutableStateOf(false) }
     var newPocketName by rememberSaveable { mutableStateOf("") }
+    var showCreateCategoryDialog by remember { mutableStateOf(false) }
+    var newCategoryName by rememberSaveable { mutableStateOf("") }
 
     val incomeColor = Color(0xFF2E7D32)
     val expenseColor = Color(0xFFD32F2F)
@@ -124,9 +140,9 @@ fun AddTransactionScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 12.dp)
+                .padding(top = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
 
             // Segmented toggle: Expense / Income
@@ -148,12 +164,12 @@ fun AddTransactionScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Animated reveal of the form after choice
-            AnimatedVisibility(visible = isIncome != null, enter = fadeIn(), exit = fadeOut()) {
+            AnimatedVisibility(visible = true, enter = fadeIn(), exit = fadeOut()) {
 
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
 
                     OutlinedTextField(
                         value = title, 
@@ -180,40 +196,70 @@ fun AddTransactionScreen(
 
                     OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) { Text(text = formatDate(selectedDate)) }
 
-                    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-                        OutlinedTextField(
-                            value = selectedCategory,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Category") },
-                            placeholder = { Text("Select category") },
-                            trailingIcon = { 
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                            },
-                            modifier = Modifier
-                                .menuAnchor()
-                                .fillMaxWidth()
-                        )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()){
+                        ExposedDropdownMenuBox(
+                            expanded = expanded,
+                            onExpandedChange = {expanded = !expanded },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            OutlinedTextField(
+                                value = selectedCategory,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Category") },
+                                placeholder = {Text("Select Category") },
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                                },
+                                modifier = Modifier.menuAnchor().fillMaxWidth()
+                            )
 
-                        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                            categories.forEach { category -> DropdownMenuItem(text = { Text(category) }, onClick = { selectedCategory = category; expanded = false }) }
+                            ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                                if(categories.isEmpty()) {
+                                    DropdownMenuItem(text = {Text("No categories yet")}, onClick = { expanded = false })
+                                } else {
+                                    categories.forEach { category ->
+                                        DropdownMenuItem(text = {Text(category)}, onClick = {selectedCategory = category; expanded = false})
+                                    }
+                                }
+                            }
+                        }
+
+                        IconButton(onClick = { showCreateCategoryDialog = true }) {
+                            Icon(imageVector = Icons.Filled.Add, contentDescription = "Add Category")
                         }
                     }
 
                     // Pocket selection (mandatory)
                     if (pocketRepository != null) {
                         var pocketExpanded by remember { mutableStateOf(false) }
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                             ExposedDropdownMenuBox(expanded = pocketExpanded, onExpandedChange = { pocketExpanded = !pocketExpanded }, modifier = Modifier.weight(1f)) {
                                 val selectedPocket = pockets.firstOrNull { it.id == selectedPocketId }
-                                val pocketLabel = selectedPocket?.let { "${it.name} — ${com.renium.sipkasku.utils.formatRupiah(it.balance)}" } ?: "Select pocket"
-                                OutlinedTextField(value = pocketLabel, onValueChange = {}, readOnly = true, label = { Text("Pocket") }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = pocketExpanded) }, modifier = Modifier.menuAnchor().fillMaxWidth())
+                                val pocketLabel = selectedPocket?.let { "${it.name} — ${formatRupiah(it.balance)}" } ?: ""
+                                OutlinedTextField(
+                                    value = pocketLabel,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    label = { Text("Pocket") },
+                                    placeholder = {Text("Select pocket")},
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = pocketExpanded) },
+                                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                                )
 
                                 ExposedDropdownMenu(expanded = pocketExpanded, onDismissRequest = { pocketExpanded = false }) {
                                     if (pockets.isEmpty()) {
                                         DropdownMenuItem(text = { Text("No pockets yet") }, onClick = { pocketExpanded = false })
                                     } else {
-                                        pockets.forEach { pocket -> DropdownMenuItem(text = { Text("${pocket.name} — ${com.renium.sipkasku.utils.formatRupiah(pocket.balance)}") }, onClick = { selectedPocketId = pocket.id; pocketExpanded = false }) }
+                                        pockets.forEach { 
+                                            pocket -> DropdownMenuItem(
+                                                text = { 
+                                                    Text("${pocket.name} — ${formatRupiah(pocket.balance)}") 
+                                                },
+                                                onClick = { selectedPocketId = pocket.id; pocketExpanded = false 
+                                                }
+                                            ) 
+                                        }
                                     }
                                 }
                             }
@@ -224,9 +270,6 @@ fun AddTransactionScreen(
                             }
                         }
 
-                        if (pockets.isEmpty()) {
-                            Text("No pockets found. Please create one.", color = expenseColor)
-                        }
                     }
 
                     // validation helper
@@ -241,10 +284,6 @@ fun AddTransactionScreen(
 
                     // Disable Save when pocket not chosen (mandatory) or insufficient balance
                     val saveEnabled = !(pocketMandatory && selectedPocketId == null) && !insufficientBalance
-
-                    if (pocketMandatory && selectedPocketId == null) {
-                        Text("Pocket is required", color = expenseColor)
-                    }
 
                     if (insufficientBalance) {
                         Text("Insufficient pocket balance for this expense.", color = expenseColor)
@@ -288,8 +327,28 @@ fun AddTransactionScreen(
             title = { Text("Create Pocket") },
             text = {
                 Column {
-                    Text("You have no pockets. Create one to continue.")
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Row (verticalAlignment = Alignment.CenterVertically) {
+                        Text("Create a new pocket")
+                        Spacer(modifier = Modifier.width(4.dp))
+                        TooltipBox(
+                            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                            tooltip = {
+                                PlainTooltip {
+                                    Text("Pocket is where you keep your money and take it out")
+                                }
+                            },
+                            state = tooltipState
+                        ) {
+                            Icon (
+                                imageVector = Icons.Outlined.Info,
+                                contentDescription = "Info",
+                                modifier = Modifier.clickable{}
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text("Example: Cash, E-Wallet, Bank Account")
+                    Spacer(modifier = Modifier.height(4.dp))
                     OutlinedTextField(value = newPocketName, onValueChange = { newPocketName = it }, label = { Text("Pocket name") }, modifier = Modifier.fillMaxWidth())
                 }
             },
@@ -297,7 +356,7 @@ fun AddTransactionScreen(
                 TextButton(onClick = {
                     if (newPocketName.isNotBlank()) {
                         scope.launch {
-                            val id = pocketRepository.insertPocket(com.renium.sipkasku.data.local.Pocket(name = newPocketName))
+                            val id = pocketRepository.insertPocket(Pocket(name = newPocketName))
                             selectedPocketId = id.toInt()
                             newPocketName = ""
                             showCreatePocketDialog = false
@@ -308,8 +367,68 @@ fun AddTransactionScreen(
             dismissButton = {
                 TextButton(onClick = {
                     showCreatePocketDialog = false
-                    navController.navigate(com.renium.sipkasku.navigation.Screen.Settings.route)
+                    navController.navigate(Settings.route)
                 }) { Text("Open Settings") }
+            }
+        )
+    }
+
+    if (showCreateCategoryDialog && categoryRepository != null) {
+        AlertDialog(
+            onDismissRequest = { showCreateCategoryDialog = false },
+            title = {Text("Create Category")},
+            text = {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Create a new category")
+                        Spacer(modifier = Modifier.width(4.dp))
+
+                        TooltipBox(
+                            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                            tooltip = {
+                                PlainTooltip {
+                                    Text("Categories are labels to group each of your income and expenses.")
+                                }
+                            }, state = tooltipState
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Info,
+                                contentDescription = "Info",
+                                modifier = Modifier.clickable{}
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text("Example: Shopping, Salary, etc")    
+                    Spacer(modifier = Modifier.height(4.dp))
+                    OutlinedTextField(
+                        value = newCategoryName,
+                        onValueChange = { newCategoryName = it },
+                        label = {Text("Category Name")},
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if(newCategoryName.isNotBlank()) {
+                        val type = if (isIncome == true) "INCOME" else "EXPENSE"
+                        scope.launch {
+                            categoryRepository.insert (
+                                Category(
+                                    name = newCategoryName.trim(),
+                                    type = type
+                                )
+                            )
+                            selectedCategory = newCategoryName.trim()
+                            newCategoryName = ""
+                            showCreateCategoryDialog = false
+                        }
+                    }
+                }) { Text("Create") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCreateCategoryDialog = false }) { Text("Cancel")}
             }
         )
     }
