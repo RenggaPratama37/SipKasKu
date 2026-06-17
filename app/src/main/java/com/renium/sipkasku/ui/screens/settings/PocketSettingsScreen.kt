@@ -47,6 +47,10 @@ fun PocketSettingsScreen(
         mutableStateOf("")
     }
 
+    var pocketToDelete by remember {
+        mutableStateOf<Pocket?>(null)
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -86,19 +90,14 @@ fun PocketSettingsScreen(
                         }
                         IconButton(
                             onClick = {
-                                scope.launch {
-                                    transactionRepository?.deleteByPocketId(
-                                        p.id
-                                    )
-                                    pocketRepository?.deletePocket(p)
-                                }
+                                pocketToDelete = p
                             }
                         ) {
                            Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Delete Pocket",
                                 tint = MaterialTheme.colorScheme.error
-                            )
+                           )
                         }
                     }
                 }
@@ -142,5 +141,56 @@ fun PocketSettingsScreen(
                 Text("Add Pocket")
             }
         }
+    }
+
+    pocketToDelete?.let { pocket ->
+        AlertDialog(
+            onDismissRequest = {
+                pocketToDelete = null
+            },
+            title = {
+                Text("Delete Pocket")
+            },
+            text = {
+                Column {
+                    Text(
+                        "Delete \"${pocket.name}\"?"
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "All transactions inside this pocket will also be deleted.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "This action cannot be undone",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            transactionRepository?.deleteByPocketId(pocket.id)
+                            pocketRepository?.deletePocket(pocket)
+                        }
+                        pocketToDelete = null
+                    }
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        pocketToDelete = null
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
