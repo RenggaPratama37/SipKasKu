@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Sort
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.NavController
 import com.renium.sipkasku.data.repository.PocketRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
@@ -45,188 +46,193 @@ fun HomeScreen(
     val pocketsList by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList<Pocket>()) }
     val pocketsMap = remember(pocketsList) { pocketsList.associateBy { it.id } }
 
-    val balance = transactions.sumOf { transaction ->
-        if (transaction.isIncome) transaction.amount else -transaction.amount
+    val balance = remember(transactions) {
+        transactions.sumOf { transaction ->
+            if(transaction.isIncome)
+                transaction.amount
+            else -transaction.amount
+        }
     }
 
     val scope = rememberCoroutineScope()
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                horizontal = 12.dp,
+                vertical = 8.dp
+            )
+    ) {
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
+        BalanceCard(balance = balance)
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Header: title + sort (sort aligned to the right like a file manager)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
         ) {
+            Text(
+                text = "Recent Transactions",
+                style = MaterialTheme.typography.titleLarge
+            )
 
-            BalanceCard(balance = balance)
+            Spacer(modifier = Modifier.weight(1f))
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Header: title + sort (sort aligned to the right like a file manager)
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Recent Transactions",
-                    style = MaterialTheme.typography.titleLarge
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                // Sort dropdown on the right
-                var sortExpanded by remember { mutableStateOf(false)}
-                Box{
-                    ElevatedCard(
-                        onClick = {
-                            sortExpanded = true
-                        }
+            // Sort dropdown on the right
+            var sortExpanded by rememberSaveable{mutableStateOf(false)}
+            Box{
+                ElevatedCard(
+                    onClick = {
+                        sortExpanded = true
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(
+                            horizontal = 12.dp,
+                            vertical = 8.dp
+                        ),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier.padding(
-                                horizontal = 12.dp,
-                                vertical = 8.dp
-                            ),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Text(
+                            when(currentSort){
+                                HomeViewModel.SortType.DATE_DESC -> "Date ↓"
+                                HomeViewModel.SortType.DATE_ASC -> "Date ↑"
+                                HomeViewModel.SortType.AMOUNT_DESC -> "Amount ↓"
+                                HomeViewModel.SortType.AMOUNT_ASC -> "Amount ↑"
+                            }
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Icon(
+                            Icons.Default.Sort,
+                            contentDescription = null
+                        )
+                    }
+                }
+                DropdownMenu( expanded = sortExpanded, onDismissRequest = { sortExpanded = false }) {
+                    DropdownMenuItem(
+                        text = {
                             Text(
-                                when(currentSort){
-                                    HomeViewModel.SortType.DATE_DESC -> "Date ↓"
-                                    HomeViewModel.SortType.DATE_ASC -> "Date ↑"
-                                    HomeViewModel.SortType.AMOUNT_DESC -> "Amount ↓"
-                                    HomeViewModel.SortType.AMOUNT_ASC -> "Amount ↑"
+                                if (
+                                    currentSort == HomeViewModel.SortType.DATE_ASC || currentSort == HomeViewModel.SortType.DATE_DESC) {
+                                    if (currentSort == HomeViewModel.SortType.DATE_ASC)
+                                        "Date ↑"
+                                    else
+                                        "Date ↓"
+                                } else {
+                                    "Date"
                                 }
                             )
-                            Spacer(Modifier.width(8.dp))
-                            Icon(
-                                Icons.Default.Sort,
-                                contentDescription = null
+                        },
+                        onClick = {
+                            viewModel.setSort(
+                                when (currentSort) {
+                                    HomeViewModel.SortType.DATE_ASC -> HomeViewModel.SortType.DATE_DESC
+                                else ->
+                                    HomeViewModel.SortType.DATE_ASC
+                                }
                             )
+                            sortExpanded = false
                         }
-                    }
-                    DropdownMenu(
-                        expanded = sortExpanded,
-                        onDismissRequest = { sortExpanded = false }) {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        if (
-                                            currentSort == HomeViewModel.SortType.DATE_ASC || currentSort == HomeViewModel.SortType.DATE_DESC) {
-                                                if (currentSort == HomeViewModel.SortType.DATE_ASC)
-                                                    "Date ↑"
-                                                else
-                                                    "Date ↓"
-                                            } else {
-                                                    "Date"
-                                                }
-                                        )
-                                    },
-                                    onClick = {
-                                        viewModel.setSort(
-                                            when (currentSort) {
-                                                HomeViewModel.SortType.DATE_ASC ->
-                                                HomeViewModel.SortType.DATE_DESC
-                                                else ->
-                                                HomeViewModel.SortType.DATE_ASC
-                                            }
-                                        )
-                                    sortExpanded = false
-                                    }
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                if (currentSort == HomeViewModel.SortType.AMOUNT_ASC || currentSort == HomeViewModel.SortType.AMOUNT_DESC) {
+                                    if (currentSort == HomeViewModel.SortType.AMOUNT_ASC) "Amount ↑"
+                                    else "Amount ↓"
+                                } else {
+                                    "Amount"
+                                }
                             )
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        if (currentSort == HomeViewModel.SortType.AMOUNT_ASC || currentSort == HomeViewModel.SortType.AMOUNT_DESC) {
-                                            if (currentSort == HomeViewModel.SortType.AMOUNT_ASC) "Amount ↑"
-                                            else "Amount ↓"
-                                        } else {
-                                            "Amount"
-                                        }
-                                    )
-                                },
-                            onClick = {
-                                viewModel.setSort(
-                                    when (currentSort) {
-                                        HomeViewModel.SortType.AMOUNT_ASC ->
+                        },
+                        onClick = {
+                            viewModel.setSort(
+                                when (currentSort) {
+                                    HomeViewModel.SortType.AMOUNT_ASC ->
                                         HomeViewModel.SortType.AMOUNT_DESC
-                                    else -> HomeViewModel.SortType.AMOUNT_ASC
-                                    }
-                                )
-                                sortExpanded = false
-                            }
-                        )
-                    }
+                               else -> HomeViewModel.SortType.AMOUNT_ASC
+                                }
+                            )
+                            sortExpanded = false
+                        }
+                    )
                 }
             }
+        }
 
-            Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
-            // Single row of filter chips (All / Income / Expense)
-            val currentFilter by viewModel.currentFilter.collectAsState()
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+        // Single row of filter chips (All / Income / Expense)
+        val currentFilter by viewModel.currentFilter.collectAsState()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            FilterChip(
+                selected = currentFilter == HomeViewModel.FilterType.ALL,
+                onClick = { viewModel.setFilter(HomeViewModel.FilterType.ALL) },
+                label = { Text("All") }
+            )
+            FilterChip(
+                selected = currentFilter == HomeViewModel.FilterType.INCOME,
+                onClick = { viewModel.setFilter(HomeViewModel.FilterType.INCOME) },
+                label = { Text("Income") }
+            )
+            FilterChip(
+                selected = currentFilter == HomeViewModel.FilterType.EXPENSE,
+                onClick = { viewModel.setFilter(HomeViewModel.FilterType.EXPENSE) },
+                label = { Text("Expense") }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        if (transactions.isEmpty()) {
+
+            Box(
+                modifier = Modifier.weight(1f)
             ) {
-                FilterChip(
-                    selected = currentFilter == HomeViewModel.FilterType.ALL,
-                    onClick = { viewModel.setFilter(HomeViewModel.FilterType.ALL) },
-                    label = { Text("All") }
-                )
-                FilterChip(
-                    selected = currentFilter == HomeViewModel.FilterType.INCOME,
-                    onClick = { viewModel.setFilter(HomeViewModel.FilterType.INCOME) },
-                    label = { Text("Income") }
-                )
-                FilterChip(
-                    selected = currentFilter == HomeViewModel.FilterType.EXPENSE,
-                    onClick = { viewModel.setFilter(HomeViewModel.FilterType.EXPENSE) },
-                    label = { Text("Expense") }
-                )
+                EmptyState()
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+        } else {
 
-            if (transactions.isEmpty()) {
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(
+                    items = transactions,
+                    key = {it.id}
+                ) { transaction ->
 
-                Box(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    EmptyState()
-                }
+                    SwipeableTransactionItem(
+                        transaction = transaction,
+                        pocketName = transaction.pocketId?.let { pocketsMap[it]?.name },
+                        onDelete = {
 
-            } else {
+                            viewModel.deleteTransaction(transaction)
 
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(transactions) { transaction ->
+                            scope.launch {
+                                val result = snackbarHostState.showSnackbar(
+                                    message = "Transaction deleted",
+                                    actionLabel = "UNDO"
+                                )
 
-                        SwipeableTransactionItem(
-                            transaction = transaction,
-                            pocketName = transaction.pocketId?.let { pocketsMap[it]?.name },
-                            onDelete = {
-
-                                viewModel.deleteTransaction(transaction)
-
-                                scope.launch {
-                                    val result = snackbarHostState.showSnackbar(
-                                        message = "Transaction deleted",
-                                        actionLabel = "UNDO"
-                                    )
-
-                                    if (result == SnackbarResult.ActionPerformed) {
-                                        viewModel.restoreTransaction(transaction)
-                                    }
+                                if (result == SnackbarResult.ActionPerformed) {
+                                    viewModel.restoreTransaction(transaction)
                                 }
                             }
-                        )
-                    }
+                        }
+                    )
                 }
             }
         }
     }
 }
+
