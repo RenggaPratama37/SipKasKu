@@ -26,6 +26,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.renium.sipkasku.viewmodel.CategoryViewModel
 import com.renium.sipkasku.data.repository.TransactionRepository
 import com.renium.sipkasku.navigation.Screen
 import com.renium.sipkasku.ui.screens.AddTransactionScreen
@@ -37,6 +39,7 @@ import com.renium.sipkasku.ui.screens.settings.PocketSettingsScreen
 import com.renium.sipkasku.ui.screens.settings.CategorySettingsScreen
 import com.renium.sipkasku.ui.screens.settings.RecurringSettingsScreen
 import com.renium.sipkasku.data.local.Category
+import com.renium.sipkasku.viewmodel.CategoryViewModelFactory
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,6 +87,14 @@ fun MainScreen(
         ?.getByType("EXPENSE")
         ?.collectAsState(initial = emptyList())
         ?: remember { androidx.compose.runtime.mutableStateOf(emptyList()) }
+
+    val categoryViewModel: CategoryViewModel = viewModel (
+        factory = CategoryViewModelFactory(
+            categoryRepository = categoryRepository!!,
+            transactionRepository = repository,
+            recurringRepository = recurringRepository!!
+        )
+    )
 
     Scaffold(
         snackbarHost = {
@@ -258,11 +269,19 @@ fun MainScreen(
                         }
                     },
 
-                    onDeleteCategory = { category ->
-                        scope.launch {
-                            categoryRepository?.delete(category)
-                        }
-                    }
+                    onRequestDeleteCategory = {
+                        categoryViewModel.requestDeleteCategory(it)
+                    },
+
+                    pendingDeleteCategory = categoryViewModel.pendingDeleteCategory,
+
+                    pendingDeleteCount = categoryViewModel.pendingDeleteTransactionCount,
+
+                    pendingDeleteRecurringCount = categoryViewModel.pendingDeleteRecurringCount,
+
+                    onConfirmDelete = { categoryViewModel.confirmDeleteCategory() },
+
+                    onCancelDelete = { categoryViewModel.cancelDeleteCategory() }
                 )
             }
 

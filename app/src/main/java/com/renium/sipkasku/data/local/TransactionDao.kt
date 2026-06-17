@@ -53,4 +53,9 @@ interface TransactionDao {
         startOfDay: Long,
         endOfDay: Long
     ): Int
+
+    @Query("""
+        SELECT COUNT(*) FROM transactions WHERE categoryId = :categoryId
+    """)
+    suspend fun countByCategoryId(categoryId: Int): Int
 }

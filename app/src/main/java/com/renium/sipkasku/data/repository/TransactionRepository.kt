@@ -26,12 +26,7 @@ class TransactionRepository(
         pocketId: Int
     ) = dao.deleteByPocketId(pocketId)
 
-    suspend fun deleteByCategory(
-        categoryName: String
-    ) {
-        // find category id by name and delete by id
-        // repository does not have category DAO; caller should pass id instead. Keep method for compatibility but no-op.
-    }
+    suspend fun countByCategoryId(categoryId: Int): Int = dao.countByCategoryId(categoryId)
 
     suspend fun countByRecurringAndDate(
         recurringId: Int,

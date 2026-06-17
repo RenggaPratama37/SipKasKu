@@ -45,46 +45,61 @@ fun CategorySettingsScreen(
     incomeCategories: List<Category>,
     expenseCategories: List<Category>,
     onAddCategory: (name: String, type: String) -> Unit,
-    onDeleteCategory: (Category) -> Unit
+    onRequestDeleteCategory: (Category) -> Unit,
+    pendingDeleteCategory: Category?,
+    pendingDeleteRecurringCount: Int,
+    pendingDeleteCount: Int,
+    onConfirmDelete: () -> Unit,
+    onCancelDelete: () -> Unit
 ) {
     var newCategoryName by remember { mutableStateOf("") }
     var newCategoryType by remember { mutableStateOf("EXPENSE") }
-    var categoryToDelete by remember { mutableStateOf<Category?>(null) }
-
 
     var incomeExpanded by remember { mutableStateOf(true) }
     var expenseExpanded by remember { mutableStateOf(true) }
 
-    categoryToDelete?.let { category ->
+    pendingDeleteCategory?.let { category ->
         AlertDialog(
-            onDismissRequest = {
-                categoryToDelete = null
-            },
-            title = {
-                Text("Delete Category")
-            },
+            onDismissRequest = onCancelDelete,
+            title = { Text("Delete Category") },
             text = {
-                Text("Delete \"${category.name}\"?")
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onDeleteCategory(category)
-                        categoryToDelete = null
+                if(pendingDeleteCount > 0 || pendingDeleteRecurringCount > 0) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("Delete \"$category.name\"?")
+                        Text(
+                            "Affected:",
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        if(pendingDeleteCount > 0) {
+                            Text("• $pendingDeleteCount transaction(s)")
+                        }
+                        if(pendingDeleteRecurringCount > 0) {
+                            Text("• $pendingDeleteRecurringCount recurring plan(s)")
+                        }
+                        Text(
+                            "This action cannot be undone,",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
-                ) {
-                    Text(
-                        text = "Delete",
-                        color = MaterialTheme.colorScheme.error
-                    )
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("Delete \"${category.name}\"?")
+                        Text(
+                            "This action cannot be undone",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        categoryToDelete = null
-                    }
-                ) {
+            confirmButton = {
+                TextButton(onClick = onConfirmDelete) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton =  {
+                TextButton(onClick = onCancelDelete) {
                     Text("Cancel")
                 }
             }
@@ -204,7 +219,7 @@ fun CategorySettingsScreen(
                 CategoryItemCard(
                     category = category,
                     onDeleteClick = {
-                        categoryToDelete = category
+                        onRequestDeleteCategory(category)
                     }
                 )
             }
@@ -228,7 +243,7 @@ fun CategorySettingsScreen(
                 CategoryItemCard(
                     category = category,
                     onDeleteClick = {
-                        categoryToDelete = category
+                        onRequestDeleteCategory(category)
                     }
                 )
             }
@@ -272,7 +287,6 @@ private fun CategorySection(
                 modifier = Modifier.weight(1f)
             )
 
-
             Icon(
                 imageVector = if (expanded) {
                     Icons.Default.KeyboardArrowUp
@@ -283,7 +297,6 @@ private fun CategorySection(
             )
         }
     }
-
 
 }
 
@@ -325,6 +338,4 @@ private fun CategoryItemCard(
             }
         }
     }
-
-
 }

@@ -98,24 +98,40 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
                     ) > 0
 
                     if (!alreadyRun) {
-                        transactionRepository.insertTransaction(
-                            TransactionEntity(
-                                title = r.title,
-                                amount = r.amount,
-                                categoryId = r.categoryId,
-                                isIncome = r.isIncome,
-                                date = System.currentTimeMillis(),
-                                pocketId = r.pocketId,
-                                recurringId = r.id
-                            )
-                        )
-
-                        r.pocketId?.let { pocketId ->
-                            val delta = if (r.isIncome) r.amount else -r.amount
-                            pocketRepository.adjustBalance(pocketId, delta)
+                        val sufficientBalance = if (!r.isIncome && r.pocketId != null) {
+                            val pocket = pocketRepository.getPocketById(r.pocketId)
+                            pocket != null && pocket.balance >= r.amount
+                        } else {
+                            true
                         }
+                        if (sufficientBalance) {
+                            transactionRepository.insertTransaction(
+                                TransactionEntity(
+                                    title = r.title,
+                                    amount = r.amount,
+                                    categoryId = r.categoryId,
+                                    isIncome = r.isIncome,
+                                    date = System.currentTimeMillis(),
+                                    pocketId = r.pocketId,
+                                    recurringId = r.id
+                                )
+                            )
 
-                        recurringRepository.update(r.copy(lastRun = System.currentTimeMillis()))
+                            r.pocketId?.let { pocketId ->
+                                val delta = if (r.isIncome) r.amount else -r.amount
+                                pocketRepository.adjustBalance(pocketId, delta)
+                            }
+
+                            recurringRepository.update(r.copy(
+                                lastRun = System.currentTimeMillis(),
+                                lastFailedRun = 0L
+                            ))
+                        } else {
+                            recurringRepository.update(r.copy(
+                                lastFailedRun = System.currentTimeMillis()
+                            ))
+                            android.util.Log.w("Recurring Worker", "Skipped '$(r.title)': insufficient balance")
+                        }
                     }
                 }
             }

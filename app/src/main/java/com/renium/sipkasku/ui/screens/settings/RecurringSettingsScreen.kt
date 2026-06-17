@@ -156,6 +156,10 @@ private fun RecurringPlanCard(
         else -> "Custom"
     }
 
+    val hasInsufficientBalance = !recurring.isIncome &&
+            recurring.lastFailedRun > recurring.lastRun &&
+            recurring.lastFailedRun > 0L
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -208,6 +212,32 @@ private fun RecurringPlanCard(
                         Text(if (recurring.isIncome) "Income" else "Expense", fontSize = MaterialTheme.typography.labelSmall.fontSize)
                     }
                 )
+            }
+
+            if (hasInsufficientBalance) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.errorContainer,
+                            MaterialTheme.shapes.small
+                        )
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        "Insufficient Balance - last execution skipped",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
 
             HorizontalDivider()

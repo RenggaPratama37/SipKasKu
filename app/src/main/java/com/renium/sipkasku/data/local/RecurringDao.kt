@@ -17,4 +17,24 @@ interface RecurringDao {
 
     @Delete
     suspend fun delete(recurring: Recurring)
+
+    @Query("""
+        DELETE FROM recurrings
+        WHERE categoryId = :categoryId
+    """)
+    suspend fun deleteByCategoryId(
+        categoryId: Int
+    )
+
+    @Query("""
+        SELECT COUNT(*) FROM recurrings
+        WHERE categoryId = :categoryId 
+    """)
+    suspend fun countByCategoryId(categoryId: Int): Int
+
+    @Query("""
+        SELECT COUNT (*) FROM recurrings
+        WHERE pocketId = :pocketId
+    """)
+    suspend fun countByPocketId(pocketId: Int): Int
 }

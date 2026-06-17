@@ -15,4 +15,8 @@ class RecurringRepository(
     suspend fun update(r: Recurring) = dao.update(r)
 
     suspend fun delete(r: Recurring) = dao.delete(r)
+
+    suspend fun deleteByCategoryId(categoryId: Int) = dao.deleteByCategoryId(categoryId)
+
+    suspend fun countByCategoryId(categoryId: Int): Int = dao.countByCategoryId(categoryId)
 }
