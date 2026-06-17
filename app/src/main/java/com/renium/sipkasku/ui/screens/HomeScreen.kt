@@ -12,7 +12,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Sort
 import androidx.navigation.NavController
+import com.renium.sipkasku.data.repository.PocketRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
+import com.renium.sipkasku.data.local.Pocket
 import com.renium.sipkasku.ui.components.BalanceCard
 import com.renium.sipkasku.ui.components.EmptyState
 import com.renium.sipkasku.ui.components.SwipeableTransactionItem
@@ -25,7 +27,7 @@ fun HomeScreen(
     navController: NavController,
     repository: TransactionRepository,
     snackbarHostState: SnackbarHostState,
-    pocketRepository: com.renium.sipkasku.data.repository.PocketRepository? = null
+    pocketRepository: PocketRepository? = null
 ) {
     val viewModel: HomeViewModel = viewModel(
         factory = TransactionViewModelFactory(repository, pocketRepository)
@@ -40,7 +42,7 @@ fun HomeScreen(
         .collectAsState()
     
     // load pockets map if repository provided
-    val pocketsList by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList<com.renium.sipkasku.data.local.Pocket>()) }
+    val pocketsList by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList<Pocket>()) }
     val pocketsMap = remember(pocketsList) { pocketsList.associateBy { it.id } }
 
     val balance = transactions.sumOf { transaction ->
@@ -169,18 +171,18 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FilterChip(
-                    selected = currentFilter == com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.ALL,
-                    onClick = { viewModel.setFilter(com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.ALL) },
+                    selected = currentFilter == HomeViewModel.FilterType.ALL,
+                    onClick = { viewModel.setFilter(HomeViewModel.FilterType.ALL) },
                     label = { Text("All") }
                 )
                 FilterChip(
-                    selected = currentFilter == com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.INCOME,
-                    onClick = { viewModel.setFilter(com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.INCOME) },
+                    selected = currentFilter == HomeViewModel.FilterType.INCOME,
+                    onClick = { viewModel.setFilter(HomeViewModel.FilterType.INCOME) },
                     label = { Text("Income") }
                 )
                 FilterChip(
-                    selected = currentFilter == com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.EXPENSE,
-                    onClick = { viewModel.setFilter(com.renium.sipkasku.viewmodel.HomeViewModel.FilterType.EXPENSE) },
+                    selected = currentFilter == HomeViewModel.FilterType.EXPENSE,
+                    onClick = { viewModel.setFilter(HomeViewModel.FilterType.EXPENSE) },
                     label = { Text("Expense") }
                 )
             }
