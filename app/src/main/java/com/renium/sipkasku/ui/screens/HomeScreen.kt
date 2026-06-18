@@ -38,6 +38,10 @@ fun HomeScreen(
         .visibleTransactions
         .collectAsState()
 
+    val allTransactions by viewModel
+        .transactions
+        .collectAsState()
+
     val currentSort by viewModel
         .currentSort
         .collectAsState()
@@ -46,12 +50,20 @@ fun HomeScreen(
     val pocketsList by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList<Pocket>()) }
     val pocketsMap = remember(pocketsList) { pocketsList.associateBy { it.id } }
 
-    val balance = remember(transactions) {
-        transactions.sumOf { transaction ->
-            if(transaction.isIncome)
-                transaction.amount
-            else -transaction.amount
-        }
+    val totalIncome = allTransactions
+        .filter{it.isIncome}
+        .sumOf{ transaction -> transaction.amount }
+
+
+    val totalExpense = allTransactions
+        .filter{!it.isIncome}
+        .sumOf { transaction -> transaction.amount}
+
+    val totalBalance = allTransactions.sumOf { transaction ->
+        if (transaction.isIncome)
+            transaction.amount
+        else
+            -transaction.amount
     }
 
     val scope = rememberCoroutineScope()
@@ -60,14 +72,14 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(
-                horizontal = 12.dp,
-                vertical = 8.dp
+                horizontal = 8.dp,
+                vertical = 4.dp
             )
     ) {
 
-        BalanceCard(balance = balance)
+        BalanceCard(totalBalance = totalBalance, totalIncome = totalIncome, totalExpense = totalExpense)
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         // Header: title + sort (sort aligned to the right like a file manager)
         Row(
@@ -91,7 +103,7 @@ fun HomeScreen(
                 ) {
                     Row(
                         modifier = Modifier.padding(
-                            horizontal = 12.dp,
+                            horizontal = 10.dp,
                             vertical = 8.dp
                         ),
                         verticalAlignment = Alignment.CenterVertically
@@ -104,7 +116,7 @@ fun HomeScreen(
                                 HomeViewModel.SortType.AMOUNT_ASC -> "Amount ↑"
                             }
                         )
-                        Spacer(Modifier.width(6.dp))
+                        Spacer(Modifier.width(4.dp))
                         Icon(
                             Icons.Default.Sort,
                             contentDescription = null
@@ -163,7 +175,7 @@ fun HomeScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         // Single row of filter chips (All / Income / Expense)
         val currentFilter by viewModel.currentFilter.collectAsState()
@@ -190,7 +202,7 @@ fun HomeScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         if (transactions.isEmpty()) {
 
@@ -204,7 +216,7 @@ fun HomeScreen(
 
             LazyColumn(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 items(
                     items = transactions,

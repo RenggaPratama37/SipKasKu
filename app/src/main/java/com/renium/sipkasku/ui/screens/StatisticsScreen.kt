@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.renium.sipkasku.data.repository.CategoryRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
 import com.renium.sipkasku.utils.formatRupiah
 import com.renium.sipkasku.viewmodel.StatisticsViewModel
@@ -53,7 +54,7 @@ import androidx.compose.ui.graphics.Color
 fun StatisticsScreen(
     navController: NavController,
     repository: TransactionRepository,
-    categoryRepository: com.renium.sipkasku.data.repository.CategoryRepository? = null
+    categoryRepository: CategoryRepository? = null
 ) {
     val viewModel: StatisticsViewModel = viewModel(
         factory = TransactionViewModelFactory(repository)
@@ -89,53 +90,6 @@ fun StatisticsScreen(
                         }
                 }) {
                     Icon(Icons.Default.FileDownload, contentDescription = "Export CSV")
-                }
-            }
-        }
-
-        item {
-            // Summary header: Income / Expense / Balance
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Total Income",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = formatRupiah(income),
-                            style = MaterialTheme.typography.headlineSmall
-                        )
-                    }
-                }
-
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Total Expense",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = formatRupiah(expense),
-                            style = MaterialTheme.typography.headlineSmall
-                        )
-                    }
-                }
-
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Current Balance",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = formatRupiah(balance),
-                            style = MaterialTheme.typography.headlineSmall
-                        )
-                    }
                 }
             }
         }
