@@ -1,34 +1,33 @@
 package com.renium.sipkasku.ui.layout
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.IconButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.renium.sipkasku.viewmodel.CategoryViewModel
+import com.renium.sipkasku.data.local.Category
 import com.renium.sipkasku.data.repository.TransactionRepository
 import com.renium.sipkasku.navigation.Screen
 import com.renium.sipkasku.ui.screens.AddTransactionScreen
@@ -36,10 +35,10 @@ import com.renium.sipkasku.ui.screens.HomeScreen
 import com.renium.sipkasku.ui.screens.SettingsScreen
 import com.renium.sipkasku.ui.screens.StatisticsScreen
 import com.renium.sipkasku.ui.screens.settings.AppearanceSettingsScreen
-import com.renium.sipkasku.ui.screens.settings.PocketSettingsScreen
 import com.renium.sipkasku.ui.screens.settings.CategorySettingsScreen
+import com.renium.sipkasku.ui.screens.settings.PocketSettingsScreen
 import com.renium.sipkasku.ui.screens.settings.RecurringSettingsScreen
-import com.renium.sipkasku.data.local.Category
+import com.renium.sipkasku.viewmodel.CategoryViewModel
 import com.renium.sipkasku.viewmodel.CategoryViewModelFactory
 import kotlinx.coroutines.launch
 
@@ -260,7 +259,7 @@ fun MainScreen(
 
                     onAddCategory = { name, type ->
                         scope.launch {
-                            categoryRepository?.insert(
+                            categoryRepository.insert(
                                 Category(
                                     name = name,
                                     type = type
