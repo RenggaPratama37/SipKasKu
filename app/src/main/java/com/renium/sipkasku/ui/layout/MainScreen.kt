@@ -7,7 +7,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -105,7 +104,7 @@ fun MainScreen(
 
         topBar = {
             TopAppBar(
-                expandedHeight = 64.dp,
+                expandedHeight = 58.dp,
                 title = {
                     Text(
                         text = when(route) {
@@ -120,9 +119,7 @@ fun MainScreen(
                             "recurring_settings" -> "Systematic Recurring Transaction"
 
                             else -> "SipKasku"
-                        },
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.secondary
+                        }
                     )
                 },
                 navigationIcon = {
@@ -143,28 +140,31 @@ fun MainScreen(
         },
 
         bottomBar = {
-            if(isRootScreen) {
-                NavigationBar {
-                    items.forEach { screen->
-                        NavigationBarItem(
-                            selected = route == screen.route,
-                            onClick = {
-                                navController.navigate(screen.route) {
-                                    popUpTo(Screen.Home.route)
-                                    launchSingleTop = true
-                                }
-                            },
-                            icon = {
-                                Icon (
-                                    imageVector = screen.icon,
-                                    contentDescription = screen.title
+            NavigationBar {
+                items.forEach { screen ->
+                    NavigationBarItem(
+                        selected =
+                            route == screen.route,
+                        onClick = {
+                            navController.navigate(
+                                screen.route
+                            ) {
+                                popUpTo(
+                                    Screen.Home.route
                                 )
-                            },
-                            label = {
-                                Text(screen.title)
+                                launchSingleTop = true
                             }
-                        )
-                    }
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = screen.icon,
+                                contentDescription = screen.title
+                            )
+                        },
+                        label = {
+                            Text(screen.title)
+                        }
+                    )
                 }
             }
         },
