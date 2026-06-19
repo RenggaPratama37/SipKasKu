@@ -14,6 +14,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -105,7 +106,7 @@ fun MainScreen(
 
         topBar = {
             TopAppBar(
-                expandedHeight = 58.dp,
+                expandedHeight = 64.dp,
                 title = {
                     Text(
                         text = when(route) {
@@ -120,7 +121,9 @@ fun MainScreen(
                             "recurring_settings" -> "Systematic Recurring Transaction"
 
                             else -> "SipKasku"
-                        }
+                        },
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.secondary
                     )
                 },
                 navigationIcon = {
@@ -141,31 +144,28 @@ fun MainScreen(
         },
 
         bottomBar = {
-            NavigationBar {
-                items.forEach { screen ->
-                    NavigationBarItem(
-                        selected =
-                            route == screen.route,
-                        onClick = {
-                            navController.navigate(
-                                screen.route
-                            ) {
-                                popUpTo(
-                                    Screen.Home.route
+            if(isRootScreen) {
+                NavigationBar {
+                    items.forEach { screen->
+                        NavigationBarItem(
+                            selected = route == screen.route,
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    popUpTo(Screen.Home.route)
+                                    launchSingleTop = true
+                                }
+                            },
+                            icon = {
+                                Icon (
+                                    imageVector = screen.icon,
+                                    contentDescription = screen.title
                                 )
-                                launchSingleTop = true
+                            },
+                            label = {
+                                Text(screen.title)
                             }
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = screen.icon,
-                                contentDescription = screen.title
-                            )
-                        },
-                        label = {
-                            Text(screen.title)
-                        }
-                    )
+                        )
+                    }
                 }
             }
         },
