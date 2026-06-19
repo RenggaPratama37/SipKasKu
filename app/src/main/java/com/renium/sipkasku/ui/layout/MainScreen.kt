@@ -1,5 +1,10 @@
 package com.renium.sipkasku.ui.layout
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -7,6 +12,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -17,9 +23,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -27,6 +35,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.renium.sipkasku.data.local.Category
+import com.renium.sipkasku.data.repository.CategoryRepository
+import com.renium.sipkasku.data.repository.PocketRepository
+import com.renium.sipkasku.data.repository.RecurringRepository
+import com.renium.sipkasku.data.repository.SettingsRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
 import com.renium.sipkasku.navigation.Screen
 import com.renium.sipkasku.ui.screens.AddTransactionScreen
@@ -45,10 +57,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(
     repository: TransactionRepository,
-    pocketRepository: com.renium.sipkasku.data.repository.PocketRepository? = null,
-    categoryRepository: com.renium.sipkasku.data.repository.CategoryRepository? = null,
-    recurringRepository: com.renium.sipkasku.data.repository.RecurringRepository? = null,
-    settingsRepository: com.renium.sipkasku.data.repository.SettingsRepository? = null
+    pocketRepository: PocketRepository? = null,
+    categoryRepository: CategoryRepository? = null,
+    recurringRepository: RecurringRepository? = null,
+    settingsRepository: SettingsRepository? = null
 ) {
 
     val navController = rememberNavController()
@@ -80,12 +92,12 @@ fun MainScreen(
     val incomeCategories by categoryRepository
         ?.getByType("INCOME")
         ?.collectAsState(initial = emptyList())
-        ?: remember { androidx.compose.runtime.mutableStateOf(emptyList()) }
+        ?: remember { mutableStateOf(emptyList()) }
 
     val expenseCategories by categoryRepository
         ?.getByType("EXPENSE")
         ?.collectAsState(initial = emptyList())
-        ?: remember { androidx.compose.runtime.mutableStateOf(emptyList()) }
+        ?: remember { mutableStateOf(emptyList()) }
 
     val categoryViewModel: CategoryViewModel = viewModel (
         factory = CategoryViewModelFactory(
@@ -104,7 +116,7 @@ fun MainScreen(
 
         topBar = {
             TopAppBar(
-                expandedHeight = 58.dp,
+                expandedHeight = 64.dp,
                 title = {
                     Text(
                         text = when(route) {
@@ -119,7 +131,10 @@ fun MainScreen(
                             "recurring_settings" -> "Systematic Recurring Transaction"
 
                             else -> "SipKasku"
-                        }
+                        },
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
@@ -140,31 +155,37 @@ fun MainScreen(
         },
 
         bottomBar = {
-            NavigationBar {
-                items.forEach { screen ->
-                    NavigationBarItem(
-                        selected =
-                            route == screen.route,
-                        onClick = {
-                            navController.navigate(
-                                screen.route
-                            ) {
-                                popUpTo(
-                                    Screen.Home.route
+            AnimatedVisibility (
+                visible =  isRootScreen,
+                enter = slideInVertically { it } + fadeIn(),
+                exit = slideOutVertically { it } + fadeOut()
+            ) {
+                NavigationBar {
+                    items.forEach { screen ->
+                        NavigationBarItem(
+                            selected =
+                                route == screen.route,
+                            onClick = {
+                                navController.navigate(
+                                    screen.route
+                                ) {
+                                    popUpTo(
+                                        Screen.Home.route
+                                    )
+                                    launchSingleTop = true
+                                }
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = screen.icon,
+                                    contentDescription = screen.title
                                 )
-                                launchSingleTop = true
+                            },
+                            label = {
+                                Text(screen.title)
                             }
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = screen.icon,
-                                contentDescription = screen.title
-                            )
-                        },
-                        label = {
-                            Text(screen.title)
-                        }
-                    )
+                        )
+                    }
                 }
             }
         },
