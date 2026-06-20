@@ -23,6 +23,7 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
@@ -33,6 +34,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberDatePickerState
@@ -144,9 +146,6 @@ fun AddTransactionScreen(
     // load pockets if repository provided (pocket is mandatory)
     val pockets by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList())
         ?: remember { mutableStateOf(emptyList()) }
-
-    // pocket mandatory enforced
-    val pocketMandatory = true
 
     var selectedPocketId by rememberSaveable { mutableStateOf<Int?>(null) }
     val scope = rememberCoroutineScope()
@@ -265,7 +264,10 @@ fun AddTransactionScreen(
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                             },
                             modifier = Modifier
-                                .menuAnchor()
+                                .menuAnchor(
+                                    type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                                    enabled = true
+                                )
                                 .fillMaxWidth()
                         )
 
@@ -318,7 +320,7 @@ fun AddTransactionScreen(
                                 placeholder = { Text("Select pocket") },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = pocketExpanded) },
                                 modifier = Modifier
-                                    .menuAnchor()
+                                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
                                     .fillMaxWidth()
                             )
 
@@ -373,7 +375,7 @@ fun AddTransactionScreen(
 
                 // Disable Save when pocket not chosen (mandatory) or insufficient balance
                 val saveEnabled =
-                    !(pocketMandatory && selectedPocketId == null) && !insufficientBalance
+                    selectedPocketId != null && selectedPocketId != null && !insufficientBalance
 
                 if (insufficientBalance) {
                     Text("Insufficient pocket balance for this expense.", color = expenseColor)
@@ -387,7 +389,7 @@ fun AddTransactionScreen(
                             return@Button
                         }
 
-                        if (pocketMandatory && selectedPocketId == null) {
+                        if (selectedPocketId == null) {
                             showValidation = true
                             return@Button
                         }
@@ -427,7 +429,10 @@ fun AddTransactionScreen(
                         Text("Create a new pocket")
                         Spacer(modifier = Modifier.width(4.dp))
                         TooltipBox(
-                            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                positioning = TooltipAnchorPosition.Above,
+                                spacingBetweenTooltipAndAnchor = 8.dp
+                            ),
                             tooltip = {
                                 PlainTooltip {
                                     Text("Pocket is where you keep your money and take it out")
@@ -485,7 +490,10 @@ fun AddTransactionScreen(
                         Spacer(modifier = Modifier.width(4.dp))
 
                         TooltipBox(
-                            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                positioning = TooltipAnchorPosition.Above,
+                                spacingBetweenTooltipAndAnchor = 8.dp
+                            ),
                             tooltip = {
                                 PlainTooltip {
                                     Text("Categories are labels to group each of your income and expenses.")

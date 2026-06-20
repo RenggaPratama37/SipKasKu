@@ -29,14 +29,6 @@ interface TransactionDao {
     )
 
     @Query("""
-        DELETE FROM transactions
-        WHERE categoryId = :categoryId
-    """)
-    suspend fun deleteByCategoryId(
-        categoryId: Int
-    )
-
-    @Query("""
         SELECT * FROM transactions
         ORDER BY date DESC
     """)

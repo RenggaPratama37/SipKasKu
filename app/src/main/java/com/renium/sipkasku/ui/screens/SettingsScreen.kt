@@ -16,8 +16,7 @@ import androidx.compose.material.icons.filled.Repeat
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    navController: NavController,
-    settingsRepository: com.renium.sipkasku.data.repository.SettingsRepository? = null
+    navController: NavController
 ) {
 
     LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {

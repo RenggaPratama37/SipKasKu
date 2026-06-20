@@ -18,19 +18,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import com.renium.sipkasku.data.local.Pocket
-import com.renium.sipkasku.data.repository.PocketRepository
-import com.renium.sipkasku.data.repository.SettingsRepository
+import com.renium.sipkasku.data.repository.*
 import com.renium.sipkasku.utils.formatRupiah
 import kotlinx.coroutines.launch
 
 @Composable
 fun PocketSettingsScreen(
-    transactionRepository: com.renium.sipkasku.data.repository.TransactionRepository?,
+    transactionRepository: TransactionRepository?,
     pocketRepository: PocketRepository?,
     settingsRepository: SettingsRepository?
 ) {
@@ -40,7 +38,7 @@ fun PocketSettingsScreen(
     val pockets by pocketRepository?.getAllPockets()
         ?.collectAsState(initial = emptyList())
         ?: remember {
-            mutableStateOf(emptyList<Pocket>())
+            mutableStateOf(emptyList())
         }
 
     var newPocketName by remember {

@@ -221,7 +221,6 @@ fun MainScreen(
             ) {
 
                 HomeScreen(
-                    navController = navController,
                     repository = repository,
                     snackbarHostState = snackbarHostState,
                     pocketRepository = pocketRepository
@@ -242,8 +241,7 @@ fun MainScreen(
                 Screen.Settings.route
             ) {
                 SettingsScreen(
-                    navController = navController,
-                    settingsRepository = settingsRepository
+                    navController = navController
                 )
             }
 
@@ -309,8 +307,7 @@ fun MainScreen(
                 RecurringSettingsScreen(
                     recurringRepository = recurringRepository,
                     categoryRepository = categoryRepository,
-                    pocketRepository = pocketRepository,
-                    settingsRepository = settingsRepository
+                    pocketRepository = pocketRepository
                 )
             }
         }

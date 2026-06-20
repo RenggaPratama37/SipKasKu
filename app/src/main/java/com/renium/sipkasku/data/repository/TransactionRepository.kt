@@ -34,5 +34,4 @@ class TransactionRepository(
         endOfDay: Long
     ): Int = dao.countByRecurringAndDate(recurringId, startOfDay, endOfDay)
 
-    suspend fun deleteByCategoryId(categoryId: Int) = dao.deleteByCategoryId(categoryId)
 }

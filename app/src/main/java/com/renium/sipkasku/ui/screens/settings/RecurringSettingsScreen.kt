@@ -19,7 +19,6 @@ import com.renium.sipkasku.data.local.RecurrenceFrequency
 import com.renium.sipkasku.data.repository.RecurringRepository
 import com.renium.sipkasku.data.repository.CategoryRepository
 import com.renium.sipkasku.data.repository.PocketRepository
-import com.renium.sipkasku.data.repository.SettingsRepository
 import com.renium.sipkasku.utils.formatRupiah
 import kotlinx.coroutines.launch
 
@@ -28,14 +27,13 @@ import kotlinx.coroutines.launch
 fun RecurringSettingsScreen(
     recurringRepository: RecurringRepository?,
     categoryRepository: CategoryRepository?,
-    pocketRepository: PocketRepository?,
-    settingsRepository: SettingsRepository?
+    pocketRepository: PocketRepository?
 ) {
     val scope = rememberCoroutineScope()
 
     // Load data
     val recurrings by recurringRepository?.getAll()?.collectAsState(initial = emptyList())
-        ?: remember { mutableStateOf(emptyList<Recurring>()) }
+        ?: remember { mutableStateOf(emptyList()) }
     
     val categories by categoryRepository?.getAll()?.collectAsState(initial = emptyList())
         ?: remember { mutableStateOf(emptyList()) }

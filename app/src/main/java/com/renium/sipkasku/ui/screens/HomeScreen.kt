@@ -10,12 +10,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.navigation.NavController
 import com.renium.sipkasku.data.repository.PocketRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
-import com.renium.sipkasku.data.local.Pocket
 import com.renium.sipkasku.ui.components.BalanceCard
 import com.renium.sipkasku.ui.components.EmptyState
 import com.renium.sipkasku.ui.components.SwipeableTransactionItem
@@ -25,7 +23,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
-    navController: NavController,
     repository: TransactionRepository,
     snackbarHostState: SnackbarHostState,
     pocketRepository: PocketRepository? = null
@@ -47,7 +44,7 @@ fun HomeScreen(
         .collectAsState()
     
     // load pockets map if repository provided
-    val pocketsList by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList<Pocket>()) }
+    val pocketsList by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList()) }
     val pocketsMap = remember(pocketsList) { pocketsList.associateBy { it.id } }
 
     val totalIncome = allTransactions
@@ -118,7 +115,7 @@ fun HomeScreen(
                         )
                         Spacer(Modifier.width(4.dp))
                         Icon(
-                            Icons.Default.Sort,
+                            Icons.AutoMirrored.Filled.Sort,
                             contentDescription = null
                         )
                     }

@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-suspend fun exportTransactionsToCsv(
+fun exportTransactionsToCsv(
     context: Context,
     transactions: List<TransactionEntity>,
     categoriesMap: Map<Int, String> = emptyMap()
