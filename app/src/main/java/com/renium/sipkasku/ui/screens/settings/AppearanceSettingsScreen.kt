@@ -43,7 +43,11 @@ fun AppearanceSettingsScreen(
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.large
+            shape = MaterialTheme.shapes.large,
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            )
         ) {
             Column(
                 modifier = Modifier.padding(vertical = 8.dp)

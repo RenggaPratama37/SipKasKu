@@ -164,9 +164,9 @@ private fun RecurringPlanCard(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = if (recurring.isActive)
-                MaterialTheme.colorScheme.surfaceContainerHigh
-            else
                 MaterialTheme.colorScheme.surfaceContainerLow
+            else
+                MaterialTheme.colorScheme.surfaceContainerHighest
         )
     ) {
         Column(
