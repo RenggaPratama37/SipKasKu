@@ -24,11 +24,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.renium.sipkasku.data.local.TransactionEntity
+import com.renium.sipkasku.ui.theme.*
 import kotlin.math.roundToInt
 
 @Composable
@@ -64,7 +64,7 @@ fun SwipeableTransactionItem(
                 .width(90.dp)
                 .align(Alignment.CenterEnd)
                 .clip(MaterialTheme.shapes.medium)
-                .background(Color.Red)
+                .background(Red)
                 .padding(end=2.dp),
 
             contentAlignment = Alignment.CenterEnd
@@ -79,7 +79,7 @@ fun SwipeableTransactionItem(
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete",
-                    tint = Color.White
+                    tint = White
                 )
             }
         }

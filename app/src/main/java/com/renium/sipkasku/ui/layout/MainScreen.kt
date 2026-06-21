@@ -1,5 +1,6 @@
 package com.renium.sipkasku.ui.layout
 
+import android.text.style.StrikethroughSpan
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -49,6 +50,7 @@ import com.renium.sipkasku.ui.screens.settings.AppearanceSettingsScreen
 import com.renium.sipkasku.ui.screens.settings.CategorySettingsScreen
 import com.renium.sipkasku.ui.screens.settings.PocketSettingsScreen
 import com.renium.sipkasku.ui.screens.settings.RecurringSettingsScreen
+import com.renium.sipkasku.ui.theme.*
 import com.renium.sipkasku.viewmodel.CategoryViewModel
 import com.renium.sipkasku.viewmodel.CategoryViewModelFactory
 import kotlinx.coroutines.launch
@@ -133,7 +135,7 @@ fun MainScreen(
                             else -> "SipKasku"
                         },
                         style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.secondary,
+                        color = LeafGreen,
                         fontWeight = FontWeight.Bold
                     )
                 },

@@ -48,7 +48,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.graphics.Color
 
 @Composable
 fun StatisticsScreen(

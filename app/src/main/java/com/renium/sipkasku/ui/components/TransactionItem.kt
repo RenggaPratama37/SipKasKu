@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.renium.sipkasku.data.local.TransactionEntity
-import androidx.compose.ui.graphics.Color
+import com.renium.sipkasku.ui.theme.*
 import com.renium.sipkasku.utils.formatRupiah
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,9 +40,9 @@ fun TransactionItem(
                 text = formatRupiah(transaction.amount),
                 color =
                 if (transaction.isIncome)
-                    Color.Green
+                    IncomeColor
                 else
-                    Color.Red
+                    ExpenseColor
             )
         }
     }
