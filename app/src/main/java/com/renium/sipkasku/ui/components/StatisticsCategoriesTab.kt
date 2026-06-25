@@ -129,6 +129,7 @@ fun CategoriesTab(viewModel: StatisticsViewModel) {
                             }
                         },
                         update = { chart ->
+
                             val entries = activeBreakdown.mapIndexed { _, cat ->
                                 PieEntry(cat.percentage.toFloat(), cat.categoryName)
                             }

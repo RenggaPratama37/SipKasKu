@@ -18,7 +18,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,6 +37,7 @@ import com.renium.sipkasku.ui.theme.ExpenseColor
 import com.renium.sipkasku.ui.theme.IncomeColor
 import com.renium.sipkasku.utils.formatRupiah
 import com.renium.sipkasku.viewmodel.StatisticsViewModel
+import android.graphics.Color as AndroidColor
 
 // Tab 2: Trends
 @Composable
@@ -49,6 +49,8 @@ fun TrendsTab(viewModel: StatisticsViewModel) {
 
     val primaryColor = IncomeColor.toArgb()
     val errorColor = ExpenseColor.toArgb()
+    val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    val gridColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
 
     LazyColumn(
         modifier = Modifier
@@ -80,6 +82,7 @@ fun TrendsTab(viewModel: StatisticsViewModel) {
                                 description.isEnabled = false
                                 legend.isEnabled = true
                                 setDrawGridBackground(false)
+                                setBackgroundColor(AndroidColor.TRANSPARENT)
                                 xAxis.position = XAxis.XAxisPosition.BOTTOM
                                 xAxis.granularity = 1f
                                 xAxis.setDrawGridLines(false)
@@ -88,6 +91,10 @@ fun TrendsTab(viewModel: StatisticsViewModel) {
                             }
                         },
                         update = { chart ->
+                            chart.xAxis.textColor = textColor
+                            chart.axisLeft.textColor = textColor
+                            chart.axisLeft.gridColor = gridColor
+                            chart.legend.textColor = textColor
                             val labels = dailyPoints.map { it.dayLabel }
                             val incomeEntries = dailyPoints.mapIndexed { i, p ->
                                 BarEntry(i.toFloat(), p.income.toFloat())
@@ -139,6 +146,9 @@ fun TrendsTab(viewModel: StatisticsViewModel) {
                             }
                         },
                         update = { chart ->
+                            chart.xAxis.textColor = textColor
+                            chart.axisLeft.textColor = textColor
+                            chart.axisLeft.gridColor = gridColor
                             val labels = cashflowPoints.map { it.label }
                             val entries = cashflowPoints.mapIndexed { i, p ->
                                 Entry(i.toFloat(), p.amount.toFloat())
