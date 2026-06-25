@@ -60,7 +60,6 @@ class StatisticsViewModel(
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Overview
-
     val periodComparison: StateFlow<PeriodComparison> =
         combine(transactions, _selectedMonth) { txList, month ->
             val prevMonth = month.minusMonths(1)
@@ -79,12 +78,33 @@ class StatisticsViewModel(
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PeriodComparison(0.0, 0.0, 0.0, 0.0))
 
+    // Top Expense Categories
     val topExpenseCategories: StateFlow<List<TopCategory>> =
         combine(filteredTransactions, allCategories) { txList, cats ->
             val catMap = cats.associateBy { it.id }
             val expenses = txList.filter { !it.isIncome }
             val total = expenses.sumOf { it.amount }
             expenses.groupBy { it.categoryId }
+                .map { (catId, items) ->
+                    TopCategory(
+                        categoryId = catId,
+                        categoryName = catMap[catId]?.name ?: "Uncategorized",
+                        amount = items.sumOf { it.amount },
+                        percentage = if (total == 0.0) 0.0 else (items.sumOf { it.amount } / total) * 100,
+                        transactionCount = items.size
+                    )
+                }
+                .sortedByDescending { it.amount }
+                .take(5)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Top Income Categories
+    val topIncomeCategories: StateFlow<List<TopCategory>> =
+        combine(filteredTransactions, allCategories) { txList, cats ->
+            val catMap = cats.associateBy { it.id }
+            val incomes = txList.filter { it.isIncome }
+            val total = incomes.sumOf { it.amount }
+            incomes.groupBy { it.categoryId }
                 .map { (catId, items) ->
                     TopCategory(
                         categoryId = catId,

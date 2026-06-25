@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.renium.sipkasku.ui.screens.MonthSelector
 import com.renium.sipkasku.ui.screens.PocketFilter
 import com.renium.sipkasku.ui.theme.ExpenseColor
+import com.renium.sipkasku.ui.theme.IncomeColor
 import com.renium.sipkasku.ui.theme.LeafGreen
 import com.renium.sipkasku.utils.formatRupiah
 import com.renium.sipkasku.viewmodel.StatisticsViewModel
@@ -34,7 +35,8 @@ import com.renium.sipkasku.viewmodel.TopCategory
 @Composable
 fun OverviewTab(viewModel: StatisticsViewModel) {
     val comparison by viewModel.periodComparison.collectAsState()
-    val topCategories by viewModel.topExpenseCategories.collectAsState()
+    val topExpenses by viewModel.topExpenseCategories.collectAsState()
+    val topIncomes by viewModel.topIncomeCategories.collectAsState()
     val selectedMonth by viewModel.selectedMonth.collectAsState()
     val allPockets by viewModel.allPockets.collectAsState()
     val selectedPocketId by viewModel.selectedPocketId.collectAsState()
@@ -97,15 +99,26 @@ fun OverviewTab(viewModel: StatisticsViewModel) {
         }
 
         // Top expense categories
-        if (topCategories.isNotEmpty()) {
+        if (topExpenses.isNotEmpty()) {
             item {
                 Text("Top Expenses This Month", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
             }
-            items(topCategories) { cat ->
-                TopCategoryRow(cat)
+            items(topExpenses) { cat ->
+                TopExpenseRow(cat)
             }
         }
+        // Top Income categories
+        if (topIncomes.isNotEmpty()) {
+            item {
+                Text("Top Incomes This Month", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(8.dp))
+            }
+            items(topIncomes) { cat ->
+                TopIncomeRow(cat)
+            }
+        }
+
     }
 }
 
@@ -144,7 +157,7 @@ fun ComparisonCard(
 }
 
 @Composable
-fun TopCategoryRow(cat: TopCategory) {
+fun TopExpenseRow(cat: TopCategory) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -167,6 +180,38 @@ fun TopCategoryRow(cat: TopCategory) {
             Column(horizontalAlignment = Alignment.End) {
                 Text(formatRupiah(cat.amount), style = MaterialTheme.typography.bodyMedium,
                     color = ExpenseColor, fontWeight = FontWeight.SemiBold)
+                Text("${"%.1f".format(cat.percentage)}%",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+@Composable
+fun TopIncomeRow(cat: TopCategory) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(cat.categoryName, style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium)
+                Text("${cat.transactionCount} transactions",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(4.dp))
+                LinearProgressIndicator(
+                    progress = { (cat.percentage / 100).toFloat() },
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color.Green
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(horizontalAlignment = Alignment.End) {
+                Text(formatRupiah(cat.amount), style = MaterialTheme.typography.bodyMedium,
+                    color = IncomeColor, fontWeight = FontWeight.SemiBold)
                 Text("${"%.1f".format(cat.percentage)}%",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
