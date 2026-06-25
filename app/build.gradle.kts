@@ -48,10 +48,13 @@ dependencies {
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.remote.creation.core)
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.ui.text)
     // Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.ui)
     implementation(libs.material)
 
     // Compose
@@ -80,6 +83,12 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
+
+    // MPAndroidChart
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    
+    // FastExcel
+    implementation("org.dhatim:fastexcel:0.18.4")
 
     // Testing
     testImplementation(libs.junit)

@@ -225,7 +225,8 @@ fun MainScreen(
                 HomeScreen(
                     repository = repository,
                     snackbarHostState = snackbarHostState,
-                    pocketRepository = pocketRepository
+                    pocketRepository = pocketRepository,
+                    categoryRepository = categoryRepository
                 )
             }
 
@@ -235,7 +236,8 @@ fun MainScreen(
                 StatisticsScreen(
                     navController = navController,
                     repository = repository,
-                    categoryRepository = categoryRepository
+                    categoryRepository = categoryRepository,
+                    pocketRepository = pocketRepository
                 )
             }
 

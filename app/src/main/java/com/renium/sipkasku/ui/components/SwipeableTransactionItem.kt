@@ -35,7 +35,8 @@ import kotlin.math.roundToInt
 fun SwipeableTransactionItem(
     transaction: TransactionEntity,
     onDelete: () -> Unit,
-    pocketName: String? = null
+    pocketName: String? = null,
+    categoryName: String? = null  
 ) {
 
     var offsetX by remember {
@@ -119,7 +120,8 @@ fun SwipeableTransactionItem(
         ) {
                 TransactionItem(
                     transaction = transaction,
-                    pocketName = pocketName
+                    pocketName = pocketName,
+                    categoryName = categoryName 
                 )
         }
     }

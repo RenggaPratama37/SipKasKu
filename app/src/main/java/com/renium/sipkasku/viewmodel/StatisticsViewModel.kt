@@ -2,145 +2,203 @@ package com.renium.sipkasku.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.renium.sipkasku.data.local.Category
+import com.renium.sipkasku.data.local.Pocket
 import com.renium.sipkasku.data.local.TransactionEntity
+import com.renium.sipkasku.data.repository.CategoryRepository
+import com.renium.sipkasku.data.repository.PocketRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.*
 import java.time.Instant
-import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.WeekFields
 import java.util.Locale
-import com.renium.sipkasku.viewmodel.MonthlySummary
-import com.renium.sipkasku.viewmodel.WeeklySummary
-import com.renium.sipkasku.viewmodel.CashflowPoint
 
 class StatisticsViewModel(
-    repository: TransactionRepository
+    private val transactionRepository: TransactionRepository,
+    private val categoryRepository: CategoryRepository,
+    private val pocketRepository: PocketRepository
 ) : ViewModel() {
 
+    private val zone = ZoneId.systemDefault()
+
+    // Raw data
     val transactions: StateFlow<List<TransactionEntity>> =
-        repository
-            .getAllTransactions()
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = emptyList()
-            )
+        transactionRepository.getAllTransactions()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val totalIncome =
-        transactions
-            .map { list ->
+    val allCategories: StateFlow<List<Category>> =
+        categoryRepository.getAll()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-                list
-                    .filter { it.isIncome }
-                    .sumOf { it.amount }
+    val allPockets: StateFlow<List<Pocket>> =
+        pocketRepository.getAllPockets()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Filters
+    private val _selectedMonth = MutableStateFlow(YearMonth.now())
+    val selectedMonth: StateFlow<YearMonth> = _selectedMonth.asStateFlow()
+
+    private val _selectedPocketId = MutableStateFlow<Int?>(null)
+    val selectedPocketId: StateFlow<Int?> = _selectedPocketId.asStateFlow()
+
+    fun selectMonth(month: YearMonth) { _selectedMonth.value = month }
+    fun selectPocket(pocketId: Int?) { _selectedPocketId.value = pocketId }
+
+    // Filtered transactions (by month + pocket)
+    val filteredTransactions: StateFlow<List<TransactionEntity>> =
+        combine(transactions, _selectedMonth, _selectedPocketId) { txList, month, pocketId ->
+            txList.filter { tx ->
+                val txMonth = Instant.ofEpochMilli(tx.date).atZone(zone).toLocalDate()
+                    .let { YearMonth.of(it.year, it.month) }
+                val matchMonth = txMonth == month
+                val matchPocket = pocketId == null || tx.pocketId == pocketId
+                matchMonth && matchPocket
             }
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5000),
-                0.0
-            )
-    val totalExpense =
-        transactions
-            .map { list ->
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-                list
-                    .filter { !it.isIncome }
-                    .sumOf { it.amount }
+    // Overview
+
+    val periodComparison: StateFlow<PeriodComparison> =
+        combine(transactions, _selectedMonth) { txList, month ->
+            val prevMonth = month.minusMonths(1)
+            fun List<TransactionEntity>.forMonth(m: YearMonth) = filter { tx ->
+                val txMonth = Instant.ofEpochMilli(tx.date).atZone(zone).toLocalDate()
+                    .let { YearMonth.of(it.year, it.month) }
+                txMonth == m
             }
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5000),
-                0.0
+            val current = txList.forMonth(month)
+            val previous = txList.forMonth(prevMonth)
+            PeriodComparison(
+                currentIncome = current.filter { it.isIncome }.sumOf { it.amount },
+                currentExpense = current.filter { !it.isIncome }.sumOf { it.amount },
+                previousIncome = previous.filter { it.isIncome }.sumOf { it.amount },
+                previousExpense = previous.filter { !it.isIncome }.sumOf { it.amount }
             )
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PeriodComparison(0.0, 0.0, 0.0, 0.0))
 
+    val topExpenseCategories: StateFlow<List<TopCategory>> =
+        combine(filteredTransactions, allCategories) { txList, cats ->
+            val catMap = cats.associateBy { it.id }
+            val expenses = txList.filter { !it.isIncome }
+            val total = expenses.sumOf { it.amount }
+            expenses.groupBy { it.categoryId }
+                .map { (catId, items) ->
+                    TopCategory(
+                        categoryId = catId,
+                        categoryName = catMap[catId]?.name ?: "Uncategorized",
+                        amount = items.sumOf { it.amount },
+                        percentage = if (total == 0.0) 0.0 else (items.sumOf { it.amount } / total) * 100,
+                        transactionCount = items.size
+                    )
+                }
+                .sortedByDescending { it.amount }
+                .take(5)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Trends
     val monthlySummaries: StateFlow<List<MonthlySummary>> =
-        transactions
-            .map { list ->
-                val zone = ZoneId.systemDefault()
-                val fmt = DateTimeFormatter.ofPattern("MMMM yyyy", Locale("id","ID"))
-
-                list.groupBy { tx ->
-                    Instant.ofEpochMilli(tx.date).atZone(zone).toLocalDate().withDayOfMonth(1)
-                }.toList().sortedByDescending { it.first }
-                    .map { (date, items) ->
-                        val income = items.filter { it.isIncome }.sumOf { it.amount }
-                        val expense = items.filter { !it.isIncome }.sumOf { it.amount }
-                        MonthlySummary(
-                            yearMonth = date.format(fmt),
-                            income = income,
-                            expense = expense,
-                            itemsCount = items.size
-                        )
-                    }
+        transactions.map { txList ->
+            val fmt = DateTimeFormatter.ofPattern("MMM yyyy", Locale("id", "ID"))
+            txList.groupBy { tx ->
+                Instant.ofEpochMilli(tx.date).atZone(zone).toLocalDate()
+                    .let { YearMonth.of(it.year, it.month) }
+            }.map { (ym, items) ->
+                MonthlySummary(
+                    yearMonth = ym.format(fmt),
+                    income = items.filter { it.isIncome }.sumOf { it.amount },
+                    expense = items.filter { !it.isIncome }.sumOf { it.amount },
+                    itemsCount = items.size,
+                    sortKey = ym.year * 100 + ym.monthValue
+                )
             }
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5000),
-                emptyList()
-            )
+            .filter { it.income > 0 || it.expense > 0 }
+            .sortedByDescending { it.sortKey }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val weeklySummaries: StateFlow<List<WeeklySummary>> =
-        transactions
-            .map { list ->
-                val zone = ZoneId.systemDefault()
-                val wf = WeekFields.of(Locale.getDefault())
-
-                list.groupBy { tx ->
-                    val ld = Instant.ofEpochMilli(tx.date).atZone(zone).toLocalDate()
-                    val week = ld.get(wf.weekOfWeekBasedYear())
-                    val year = ld.year
-                    Pair(year, week)
-                }.toList().sortedByDescending { entry ->
-                    val key = entry.first
-                    key.first * 100 + key.second
-                }.map { entry ->
-                        val yrWeek = entry.first
-                        val items = entry.second
-                        val y = yrWeek.first
-                        val w = yrWeek.second
-                        val income = items.filter { it.isIncome }.sumOf { it.amount }
-                        val expense = items.filter { !it.isIncome }.sumOf { it.amount }
-                        WeeklySummary(
-                            weekLabel = "Week $w, $y",
-                            income = income,
-                            expense = expense
-                        )
-                    }
-            }
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5000),
-                emptyList()
-            )
+    val dailyPoints: StateFlow<List<DailyPoint>> =
+        filteredTransactions.map { txList ->
+            val fmt = DateTimeFormatter.ofPattern("dd")
+            txList.groupBy { tx ->
+                Instant.ofEpochMilli(tx.date).atZone(zone).toLocalDate()
+            }.map { (date, items) ->
+                DailyPoint(
+                    dayLabel = date.format(fmt),
+                    income = items.filter { it.isIncome }.sumOf { it.amount },
+                    expense = items.filter { !it.isIncome }.sumOf { it.amount }
+                )
+            }.sortedBy { it.dayLabel }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val cashflowPoints: StateFlow<List<CashflowPoint>> =
-        transactions
-            .map { list ->
-                val zone = ZoneId.systemDefault()
-                val fmt = DateTimeFormatter.ofPattern("MMM", Locale("id","ID"))
+        transactions.map { txList ->
+            val fmt = DateTimeFormatter.ofPattern("MMM yy", Locale("id", "ID"))
+            txList.groupBy { tx ->
+                Instant.ofEpochMilli(tx.date).atZone(zone).toLocalDate()
+                    .let { YearMonth.of(it.year, it.month) }
+            }.toList().sortedBy { it.first }
+                .map { (ym, items) ->
+                    CashflowPoint(
+                        label = ym.format(fmt),
+                        amount = items.sumOf { if (it.isIncome) it.amount else -it.amount }
+                    )
+                }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-                list.groupBy { tx ->
-                    val ld = Instant.ofEpochMilli(tx.date).atZone(zone).toLocalDate()
-                    ld.withDayOfMonth(1)
-                }.toList().sortedBy { it.first }
-                    .map { (date, items) ->
-                        val net = items.sumOf { if (it.isIncome) it.amount else -it.amount }
-                        CashflowPoint(
-                            label = date.format(fmt),
-                            amount = net
-                        )
-                    }
+    // Categories
+    val expenseBreakdown: StateFlow<List<CategoryBreakdown>> =
+        combine(filteredTransactions, allCategories) { txList, cats ->
+            val catMap = cats.associateBy { it.id }
+            val expenses = txList.filter { !it.isIncome }
+            val total = expenses.sumOf { it.amount }
+            expenses.groupBy { it.categoryId }
+                .map { (catId, items) ->
+                    val amt = items.sumOf { it.amount }
+                    CategoryBreakdown(
+                        categoryId = catId,
+                        categoryName = catMap[catId]?.name ?: "Uncategorized",
+                        amount = amt,
+                        percentage = if (total == 0.0) 0.0 else (amt / total) * 100,
+                        isIncome = false
+                    )
+                }.sortedByDescending { it.amount }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val incomeBreakdown: StateFlow<List<CategoryBreakdown>> =
+        combine(filteredTransactions, allCategories) { txList, cats ->
+            val catMap = cats.associateBy { it.id }
+            val incomes = txList.filter { it.isIncome }
+            val total = incomes.sumOf { it.amount }
+            incomes.groupBy { it.categoryId }
+                .map { (catId, items) ->
+                    val amt = items.sumOf { it.amount }
+                    CategoryBreakdown(
+                        categoryId = catId,
+                        categoryName = catMap[catId]?.name ?: "Uncategorized",
+                        amount = amt,
+                        percentage = if (total == 0.0) 0.0 else (amt / total) * 100,
+                        isIncome = true
+                    )
+                }.sortedByDescending { it.amount }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Export
+    val exportTransactions: StateFlow<List<ExportTransaction>> =
+        combine(filteredTransactions, allCategories, allPockets) { txList, cats, pockets ->
+            val catMap = cats.associateBy { it.id }
+            val pocketMap = pockets.associateBy { it.id }
+            val fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+            txList.sortedByDescending { it.date }.map { tx ->
+                ExportTransaction(
+                    date = Instant.ofEpochMilli(tx.date).atZone(zone).toLocalDate().format(fmt),
+                    title = tx.title,
+                    categoryName = catMap[tx.categoryId]?.name ?: "-",
+                    pocketName = pocketMap[tx.pocketId]?.name ?: "-",
+                    amount = tx.amount,
+                    isIncome = tx.isIncome
+                )
             }
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5000),
-                emptyList()
-            )
-
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 }

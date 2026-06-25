@@ -12,6 +12,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.runtime.saveable.rememberSaveable
+import com.renium.sipkasku.data.repository.CategoryRepository
 import com.renium.sipkasku.data.repository.PocketRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
 import com.renium.sipkasku.ui.components.BalanceCard
@@ -25,7 +26,8 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     repository: TransactionRepository,
     snackbarHostState: SnackbarHostState,
-    pocketRepository: PocketRepository? = null
+    pocketRepository: PocketRepository? = null,
+    categoryRepository: CategoryRepository? = null
 ) {
     val viewModel: HomeViewModel = viewModel(
         factory = TransactionViewModelFactory(repository, pocketRepository)
@@ -46,6 +48,11 @@ fun HomeScreen(
     // load pockets map if repository provided
     val pocketsList by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList()) }
     val pocketsMap = remember(pocketsList) { pocketsList.associateBy { it.id } }
+
+     val categoriesList by categoryRepository?.getAll()
+        ?.collectAsState(initial = emptyList()) 
+        ?: remember { mutableStateOf(emptyList()) }
+     val categoriesMap = remember(categoriesList) { categoriesList.associateBy { it.id } }
 
     val totalIncome = allTransactions
         .filter{it.isIncome}
