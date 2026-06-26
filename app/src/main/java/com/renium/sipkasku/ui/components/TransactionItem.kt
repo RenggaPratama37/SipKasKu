@@ -9,7 +9,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.renium.sipkasku.data.local.TransactionEntity
-import com.renium.sipkasku.ui.theme.*
+import com.renium.sipkasku.ui.theme.AppsColors
 import com.renium.sipkasku.utils.formatRupiah
 import java.time.Instant
 import java.time.ZoneId
@@ -66,7 +66,7 @@ fun TransactionItem(
                 text = formatRupiah(transaction.amount),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = if (transaction.isIncome) IncomeColor else ExpenseColor
+                color = if (transaction.isIncome) AppsColors.IncomeColor else AppsColors.ExpenseColor
             )
         }
     }

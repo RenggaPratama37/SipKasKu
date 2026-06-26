@@ -25,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -34,8 +33,7 @@ import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.renium.sipkasku.ui.screens.MonthSelector
-import com.renium.sipkasku.ui.theme.ExpenseColor
-import com.renium.sipkasku.ui.theme.IncomeColor
+import com.renium.sipkasku.ui.theme.AppsColors
 import com.renium.sipkasku.utils.formatRupiah
 import com.renium.sipkasku.viewmodel.CategoryBreakdown
 import com.renium.sipkasku.viewmodel.StatisticsViewModel
@@ -48,17 +46,6 @@ fun CategoriesTab(viewModel: StatisticsViewModel) {
     val incomeBreakdown by viewModel.incomeBreakdown.collectAsState()
     val selectedMonth by viewModel.selectedMonth.collectAsState()
     var showIncome by remember { mutableStateOf(false) }
-
-    val chartColors = listOf(
-        AndroidColor.rgb(33, 150, 243),
-        AndroidColor.rgb(76, 175, 80),
-        AndroidColor.rgb(255, 152, 0),
-        AndroidColor.rgb(233, 30, 99),
-        AndroidColor.rgb(156, 39, 176),
-        AndroidColor.rgb(0, 188, 212),
-        AndroidColor.rgb(255, 87, 34),
-        AndroidColor.rgb(96, 125, 139)
-    )
 
     val activeBreakdown = if (showIncome) incomeBreakdown else expenseBreakdown
 
@@ -134,7 +121,7 @@ fun CategoriesTab(viewModel: StatisticsViewModel) {
                                 PieEntry(cat.percentage.toFloat(), cat.categoryName)
                             }
                             val dataSet = PieDataSet(entries, "").apply {
-                                colors = chartColors.take(entries.size)
+                                colors = AppsColors.chartColors.take(entries.size)
                                 sliceSpace = 2f
                                 selectionShift = 8f
                             }
@@ -171,7 +158,7 @@ private fun CategoryBreakdownRow(cat: CategoryBreakdown) {
                 LinearProgressIndicator(
                     progress = { (cat.percentage / 100).toFloat() },
                     modifier = Modifier.fillMaxWidth(),
-                    color = if (cat.isIncome) IncomeColor else ExpenseColor
+                    color = if (cat.isIncome) AppsColors.IncomeColor else AppsColors.ExpenseColor
                 )
             }
             Spacer(Modifier.width(12.dp))
@@ -179,7 +166,7 @@ private fun CategoryBreakdownRow(cat: CategoryBreakdown) {
                 Text(formatRupiah(cat.amount),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (cat.isIncome) IncomeColor else ExpenseColor)
+                    color = if (cat.isIncome) AppsColors.IncomeColor else AppsColors.ExpenseColor)
                 Text("${"%.1f".format(cat.percentage)}%",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)

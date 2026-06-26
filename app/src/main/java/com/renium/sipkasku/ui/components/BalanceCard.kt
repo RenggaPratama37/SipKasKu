@@ -8,7 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.renium.sipkasku.ui.theme.*
+import com.renium.sipkasku.ui.theme.AppsColors
 import com.renium.sipkasku.utils.formatRupiah
 
 @Composable
@@ -61,7 +61,7 @@ fun BalanceCard(
                         text = formatRupiah(totalIncome ?: 0.0),
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
-                        color = IncomeColor
+                        color = AppsColors.IncomeColor
                     )
                 }
                 VerticalDivider(Modifier.height(32.dp))
@@ -78,7 +78,7 @@ fun BalanceCard(
                     Text(
                         text = formatRupiah(totalExpense ?: 0.0),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = ExpenseColor,
+                        color = AppsColors.ExpenseColor,
                         textAlign = TextAlign.Center
                     )
                 }

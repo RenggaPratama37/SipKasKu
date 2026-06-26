@@ -10,42 +10,43 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColors = lightColorScheme(
-    primary = NavyPrimary,
-    onPrimary = White,
-    primaryContainer = LightBlue,
-    onPrimaryContainer = NavyDark,
+    primary = AppsColors.NavyPrimary,
+    onPrimary = Color.White,
+    primaryContainer = AppsColors.LightBlue,
+    onPrimaryContainer = AppsColors.NavyDark,
 
-    secondary = NavyLight,
-    onSecondary = White,
+    secondary = AppsColors.NavyLight,
+    onSecondary = Color.White,
 
-    tertiary = LeafGreenDark,
-    onTertiary = White,
+    tertiary = AppsColors.LeafGreenDark,
+    onTertiary = Color.White,
 
-    background = LightBackground,
-    onBackground = onLightSurface,
-    surface = LightSurface,
-    onSurface = onLightSurface
+    background = AppsColors.LightBackground,
+    onBackground = AppsColors.onLightSurface,
+    surface = AppsColors.LightSurface,
+    onSurface = AppsColors.onLightSurface
 )
 
 private val DarkColors = darkColorScheme(
-    primary = PaleBlue,
-    onPrimary = NavyDark,
-    primaryContainer = NavyPrimary,
-    onPrimaryContainer = LightBlue,
+    primary = AppsColors.PaleBlue,
+    onPrimary = AppsColors.NavyDark,
+    primaryContainer = AppsColors.NavyPrimary,
+    onPrimaryContainer = AppsColors.LightBlue,
 
-    secondary = SkyBlue,
-    onSecondary = NavyDark,
+    secondary = AppsColors.SkyBlue,
+    onSecondary = AppsColors.NavyDark,
 
-    tertiary = LeafGreenLight,
-    onTertiary = NavyDark,
+    tertiary = AppsColors.LeafGreenLight,
+    onTertiary = AppsColors.NavyDark,
 
-    background = DarkBackground,
-    onBackground = onDarkSurface,
-    surface = DarkSurface,
-    onSurface = onDarkSurface
+    background = AppsColors.DarkBackground,
+    onBackground = AppsColors.onDarkSurface,
+    surface = AppsColors.DarkSurface,
+    onSurface = AppsColors.onDarkSurface
 )
 
 @Composable

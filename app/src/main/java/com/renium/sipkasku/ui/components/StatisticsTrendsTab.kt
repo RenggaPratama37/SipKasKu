@@ -33,8 +33,7 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.renium.sipkasku.ui.screens.MonthSelector
-import com.renium.sipkasku.ui.theme.ExpenseColor
-import com.renium.sipkasku.ui.theme.IncomeColor
+import com.renium.sipkasku.ui.theme.AppsColors
 import com.renium.sipkasku.utils.formatRupiah
 import com.renium.sipkasku.viewmodel.StatisticsViewModel
 import android.graphics.Color as AndroidColor
@@ -47,8 +46,8 @@ fun TrendsTab(viewModel: StatisticsViewModel) {
     val cashflowPoints by viewModel.cashflowPoints.collectAsState()
     val selectedMonth by viewModel.selectedMonth.collectAsState()
 
-    val primaryColor = IncomeColor.toArgb()
-    val errorColor = ExpenseColor.toArgb()
+    val primaryColor = AppsColors.IncomeColor.toArgb()
+    val errorColor = AppsColors.ExpenseColor.toArgb()
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
     val gridColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
 
@@ -192,15 +191,15 @@ fun TrendsTab(viewModel: StatisticsViewModel) {
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text(formatRupiah(m.income), color = IncomeColor,
+                            Text(formatRupiah(m.income), color = AppsColors.IncomeColor,
                                 style = MaterialTheme.typography.bodySmall)
-                            Text(formatRupiah(m.expense), color = ExpenseColor,
+                            Text(formatRupiah(m.expense), color = AppsColors.ExpenseColor,
                                 style = MaterialTheme.typography.bodySmall)
                             Text(
                                 formatRupiah(m.income - m.expense),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
-                                color = if (m.income >= m.expense) ExpenseColor else IncomeColor
+                                color = if (m.income >= m.expense) AppsColors.ExpenseColor else AppsColors.IncomeColor
                             )
                         }
                     }

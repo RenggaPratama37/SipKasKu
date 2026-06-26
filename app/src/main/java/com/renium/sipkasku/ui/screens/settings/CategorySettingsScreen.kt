@@ -38,8 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.renium.sipkasku.data.local.Category
-import com.renium.sipkasku.ui.theme.ExpenseColor
-import com.renium.sipkasku.ui.theme.IncomeColor
+import com.renium.sipkasku.ui.theme.AppsColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -156,7 +155,7 @@ fun CategorySettingsScreen(
                             },
                             modifier = Modifier.weight(1f),
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = IncomeColor,
+                                selectedContainerColor = AppsColors.IncomeColor,
                                 selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                             )
                         )
@@ -171,7 +170,7 @@ fun CategorySettingsScreen(
                             },
                             modifier = Modifier.weight(1f),
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = ExpenseColor,
+                                selectedContainerColor = AppsColors.ExpenseColor,
                                 selectedLabelColor = MaterialTheme.colorScheme.onError
                             )
                         )

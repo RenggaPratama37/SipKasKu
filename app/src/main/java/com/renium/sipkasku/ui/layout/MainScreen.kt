@@ -50,7 +50,7 @@ import com.renium.sipkasku.ui.screens.settings.AppearanceSettingsScreen
 import com.renium.sipkasku.ui.screens.settings.CategorySettingsScreen
 import com.renium.sipkasku.ui.screens.settings.PocketSettingsScreen
 import com.renium.sipkasku.ui.screens.settings.RecurringSettingsScreen
-import com.renium.sipkasku.ui.theme.*
+import com.renium.sipkasku.ui.theme.AppsColors
 import com.renium.sipkasku.viewmodel.CategoryViewModel
 import com.renium.sipkasku.viewmodel.CategoryViewModelFactory
 import kotlinx.coroutines.launch
@@ -135,7 +135,7 @@ fun MainScreen(
                             else -> "SipKasku"
                         },
                         style = MaterialTheme.typography.titleLarge,
-                        color = LeafGreen,
+                        color = AppsColors.LeafGreen,
                         fontWeight = FontWeight.Bold
                     )
                 },

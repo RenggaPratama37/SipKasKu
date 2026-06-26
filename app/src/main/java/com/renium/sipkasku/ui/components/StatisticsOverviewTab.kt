@@ -25,9 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.renium.sipkasku.ui.screens.MonthSelector
 import com.renium.sipkasku.ui.screens.PocketFilter
-import com.renium.sipkasku.ui.theme.ExpenseColor
-import com.renium.sipkasku.ui.theme.IncomeColor
-import com.renium.sipkasku.ui.theme.LeafGreen
+import com.renium.sipkasku.ui.theme.AppsColors
 import com.renium.sipkasku.utils.formatRupiah
 import com.renium.sipkasku.viewmodel.StatisticsViewModel
 import com.renium.sipkasku.viewmodel.TopCategory
@@ -131,10 +129,10 @@ fun ComparisonCard(
     isPositiveGood: Boolean
 ) {
     val growthColor = when {
-        growth > 0 && isPositiveGood -> LeafGreen
+        growth > 0 && isPositiveGood -> AppsColors.LeafGreen
         growth > 0 && !isPositiveGood -> Color.Red
         growth < 0 && isPositiveGood -> Color.Red
-        growth < 0 && !isPositiveGood -> LeafGreen
+        growth < 0 && !isPositiveGood -> AppsColors.LeafGreen
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
     val arrow = if (growth >= 0) "↑" else "↓"
@@ -179,7 +177,7 @@ fun TopExpenseRow(cat: TopCategory) {
             Spacer(Modifier.width(12.dp))
             Column(horizontalAlignment = Alignment.End) {
                 Text(formatRupiah(cat.amount), style = MaterialTheme.typography.bodyMedium,
-                    color = ExpenseColor, fontWeight = FontWeight.SemiBold)
+                    color = AppsColors.ExpenseColor, fontWeight = FontWeight.SemiBold)
                 Text("${"%.1f".format(cat.percentage)}%",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -211,7 +209,7 @@ fun TopIncomeRow(cat: TopCategory) {
             Spacer(Modifier.width(12.dp))
             Column(horizontalAlignment = Alignment.End) {
                 Text(formatRupiah(cat.amount), style = MaterialTheme.typography.bodyMedium,
-                    color = IncomeColor, fontWeight = FontWeight.SemiBold)
+                    color = AppsColors.IncomeColor, fontWeight = FontWeight.SemiBold)
                 Text("${"%.1f".format(cat.percentage)}%",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)

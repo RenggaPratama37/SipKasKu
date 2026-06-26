@@ -51,6 +51,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -68,7 +69,7 @@ import com.renium.sipkasku.utils.formatDate
 import com.renium.sipkasku.utils.formatRupiah
 import com.renium.sipkasku.viewmodel.AddTransactionViewModel
 import com.renium.sipkasku.viewmodel.TransactionViewModelFactory
-import com.renium.sipkasku.ui.theme.*
+import com.renium.sipkasku.ui.theme.AppsColors
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
@@ -180,23 +181,23 @@ fun AddTransactionScreen(
             ) {
                 Button(
                     onClick = { isIncome = false; showValidation = false; selectedCategory = "" },
-                    colors = ButtonDefaults.buttonColors(containerColor = if (!isIncome) ExpenseColor else MaterialTheme.colorScheme.surface),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (!isIncome) AppsColors.ExpenseColor else MaterialTheme.colorScheme.surface),
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
                         "Expense",
-                        color = if (!isIncome) White else MaterialTheme.colorScheme.onSurface
+                        color = if (!isIncome) Color.White else MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 Button(
                     onClick = { isIncome = true; showValidation = false; selectedCategory = "" },
-                    colors = ButtonDefaults.buttonColors(containerColor = if (isIncome) IncomeColor else MaterialTheme.colorScheme.surface),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (isIncome) AppsColors.IncomeColor else MaterialTheme.colorScheme.surface),
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
                         "Income",
-                        color = if (isIncome) White else MaterialTheme.colorScheme.onSurface
+                        color = if (isIncome) Color.White else MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -357,15 +358,15 @@ fun AddTransactionScreen(
                 if (showValidation) {
                     val amt = amount.text.replace(".", "").toDoubleOrNull() ?: 0.0
                     when {
-                        title.isBlank() -> Text("Please enter a title", color = ExpenseColor)
+                        title.isBlank() -> Text("Please enter a title", color = AppsColors.ExpenseColor)
                         amt <= 0.0 -> Text(
                             "Please enter an amount greater than zero",
-                            color = ExpenseColor
+                            color = AppsColors.ExpenseColor
                         )
 
                         selectedCategory.isBlank() -> Text(
                             "Please select a category",
-                            color = ExpenseColor
+                            color = AppsColors.ExpenseColor
                         )
                     }
                 }
@@ -375,7 +376,7 @@ fun AddTransactionScreen(
                     selectedPocketId != null && selectedPocketId != null && !insufficientBalance
 
                 if (insufficientBalance) {
-                    Text("Insufficient pocket balance for this expense.", color = ExpenseColor)
+                    Text("Insufficient pocket balance for this expense.", color = AppsColors.ExpenseColor)
                 }
 
                 Button(
@@ -409,8 +410,8 @@ fun AddTransactionScreen(
                     },
                     enabled = saveEnabled,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = if (isIncome) IncomeColor else ExpenseColor)
-                ) { Text("Save", color = White) }
+                    colors = ButtonDefaults.buttonColors(containerColor = if (isIncome) AppsColors.IncomeColor else AppsColors.ExpenseColor)
+                ) { Text("Save", color = Color.White) }
             }
         }
 

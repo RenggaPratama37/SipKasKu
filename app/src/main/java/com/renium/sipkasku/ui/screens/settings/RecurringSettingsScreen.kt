@@ -18,7 +18,7 @@ import com.renium.sipkasku.data.local.RecurrenceFrequency
 import com.renium.sipkasku.data.repository.RecurringRepository
 import com.renium.sipkasku.data.repository.CategoryRepository
 import com.renium.sipkasku.data.repository.PocketRepository
-import com.renium.sipkasku.ui.theme.*
+import com.renium.sipkasku.ui.theme.AppsColors
 import com.renium.sipkasku.utils.formatRupiah
 import kotlinx.coroutines.launch
 
@@ -202,7 +202,7 @@ private fun RecurringPlanCard(
                 Text(
                     formatRupiah(recurring.amount),
                     style = MaterialTheme.typography.headlineSmall,
-                    color = if (recurring.isIncome) IncomeColor else ExpenseColor
+                    color = if (recurring.isIncome) AppsColors.IncomeColor else AppsColors.ExpenseColor
                 )
                 AssistChip(
                     onClick = {},
