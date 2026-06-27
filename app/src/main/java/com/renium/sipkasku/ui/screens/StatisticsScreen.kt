@@ -19,7 +19,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.renium.sipkasku.data.local.Pocket
 import com.renium.sipkasku.data.repository.CategoryRepository
 import com.renium.sipkasku.data.repository.PocketRepository
@@ -44,7 +43,6 @@ import java.util.Locale
 
 @Composable
 fun StatisticsScreen(
-    navController: NavController,
     repository: TransactionRepository,
     categoryRepository: CategoryRepository? = null,
     pocketRepository: PocketRepository? = null
@@ -57,7 +55,7 @@ fun StatisticsScreen(
         )
     )
 
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Overview", "Trends", "Categories", "Export")
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -90,7 +88,7 @@ fun MonthSelector(
     onPrevious: () -> Unit,
     onNext: () -> Unit
 ) {
-    val fmt = DateTimeFormatter.ofPattern("MMMM yyyy", Locale("en", "ID"))
+    val fmt = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.forLanguageTag("en-ID"))
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,

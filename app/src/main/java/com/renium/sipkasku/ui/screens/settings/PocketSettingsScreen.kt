@@ -29,8 +29,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun PocketSettingsScreen(
     transactionRepository: TransactionRepository?,
-    pocketRepository: PocketRepository?,
-    settingsRepository: SettingsRepository?
+    pocketRepository: PocketRepository?
 ) {
 
     val scope = rememberCoroutineScope()

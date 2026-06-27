@@ -25,7 +25,6 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
             val today = Calendar.getInstance()
             val currentDay = today.get(Calendar.DAY_OF_MONTH)
             val currentDayOfWeek = today.get(Calendar.DAY_OF_WEEK) // 1=Sunday, 2=Monday, etc
-            val currentHour = today.get(Calendar.HOUR_OF_DAY)
 
             val recurrings = recurringRepository.getAll().first()
 

@@ -1,6 +1,5 @@
 package com.renium.sipkasku.ui.layout
 
-import android.text.style.StrikethroughSpan
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -227,8 +226,7 @@ fun MainScreen(
                 HomeScreen(
                     repository = repository,
                     snackbarHostState = snackbarHostState,
-                    pocketRepository = pocketRepository,
-                    categoryRepository = categoryRepository
+                    pocketRepository = pocketRepository
                 )
             }
 
@@ -236,7 +234,6 @@ fun MainScreen(
                 Screen.Statistics.route
             ) {
                 StatisticsScreen(
-                    navController = navController,
                     repository = repository,
                     categoryRepository = categoryRepository,
                     pocketRepository = pocketRepository
@@ -258,8 +255,7 @@ fun MainScreen(
                     navController = navController,
                     repository = repository,
                     pocketRepository = pocketRepository,
-                    categoryRepository = categoryRepository,
-                    settingsRepository = settingsRepository
+                    categoryRepository = categoryRepository
                 )
             }
 
@@ -272,8 +268,7 @@ fun MainScreen(
             composable("pocket_settings") {
                 PocketSettingsScreen(
                     transactionRepository = repository,
-                    pocketRepository = pocketRepository,
-                    settingsRepository = settingsRepository
+                    pocketRepository = pocketRepository
                 )
             }
 

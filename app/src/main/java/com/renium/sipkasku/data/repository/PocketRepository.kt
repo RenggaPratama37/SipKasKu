@@ -14,8 +14,6 @@ class PocketRepository(
 
     suspend fun insertPocket(pocket: Pocket) = pocketDao.insertPocket(pocket)
 
-    suspend fun updatePocket(pocket: Pocket) = pocketDao.updatePocket(pocket)
-
     suspend fun deletePocket(pocket: Pocket) = pocketDao.deletePocket(pocket)
 
     suspend fun adjustBalance(pocketId: Int, delta: Double) {

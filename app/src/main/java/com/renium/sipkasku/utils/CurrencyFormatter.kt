@@ -5,7 +5,7 @@ import java.util.Locale
 
 fun formatRupiah(amount: Double): String {
 
-    val localeID = Locale("in", "ID")
+    val localeID = Locale.forLanguageTag("id-ID")
 
     return NumberFormat
         .getCurrencyInstance(localeID)

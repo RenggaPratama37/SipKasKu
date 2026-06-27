@@ -13,13 +13,12 @@ import java.time.Instant
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.temporal.WeekFields
 import java.util.Locale
 
 class StatisticsViewModel(
-    private val transactionRepository: TransactionRepository,
-    private val categoryRepository: CategoryRepository,
-    private val pocketRepository: PocketRepository
+    transactionRepository: TransactionRepository,
+    categoryRepository: CategoryRepository,
+    pocketRepository: PocketRepository
 ) : ViewModel() {
 
     private val zone = ZoneId.systemDefault()
@@ -121,7 +120,7 @@ class StatisticsViewModel(
     // Trends
     val monthlySummaries: StateFlow<List<MonthlySummary>> =
         transactions.map { txList ->
-            val fmt = DateTimeFormatter.ofPattern("MMM yyyy", Locale("id", "ID"))
+            val fmt = DateTimeFormatter.ofPattern("MMM yyyy", Locale.forLanguageTag("en-ID"))
             txList.groupBy { tx ->
                 Instant.ofEpochMilli(tx.date).atZone(zone).toLocalDate()
                     .let { YearMonth.of(it.year, it.month) }
@@ -154,7 +153,7 @@ class StatisticsViewModel(
 
     val cashflowPoints: StateFlow<List<CashflowPoint>> =
         transactions.map { txList ->
-            val fmt = DateTimeFormatter.ofPattern("MMM yy", Locale("id", "ID"))
+            val fmt = DateTimeFormatter.ofPattern("MMM yy", Locale.forLanguageTag("en-ID"))
             txList.groupBy { tx ->
                 Instant.ofEpochMilli(tx.date).atZone(zone).toLocalDate()
                     .let { YearMonth.of(it.year, it.month) }

@@ -34,12 +34,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(
-                org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
-            )
-        }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(
+            org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+        )
     }
 }
 
@@ -85,10 +86,10 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
 
     // MPAndroidChart
-    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation(libs.mpandroidchart)
     
     // FastExcel
-    implementation("org.dhatim:fastexcel:0.18.4")
+    implementation(libs.fastexcel)
 
     // Testing
     testImplementation(libs.junit)

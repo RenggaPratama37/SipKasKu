@@ -41,7 +41,7 @@ fun ExportTab(viewModel: StatisticsViewModel) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val monthLabel = selectedMonth.format(
-        DateTimeFormatter.ofPattern("MMMM yyyy", Locale("id", "ID"))
+        DateTimeFormatter.ofPattern("MMMM yyyy", Locale.forLanguageTag("en-ID"))
     )
 
     Column(
@@ -66,7 +66,10 @@ fun ExportTab(viewModel: StatisticsViewModel) {
                 Text("Export Report", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "${exportData.size} transactions in ${selectedMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale("en", "ID")))}",
+                    "${exportData.size} transactions in ${selectedMonth.format(
+                        DateTimeFormatter.ofPattern("MMMM yyyy",
+                            Locale.forLanguageTag("en-ID"))
+                    )}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

@@ -10,7 +10,7 @@ fun formatDate(
 
     val formatter = SimpleDateFormat(
         "dd MMM yyyy",
-        Locale("id", "ID")
+        Locale.forLanguageTag("en-ID")
     )
 
     return formatter.format(

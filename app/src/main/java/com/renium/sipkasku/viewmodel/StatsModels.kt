@@ -37,12 +37,6 @@ data class DailyPoint(
     val expense: Double
 )
 
-data class WeeklySummary(
-    val weekLabel: String,
-    val income: Double,
-    val expense: Double
-)
-
 data class CashflowPoint(
     val label: String,
     val amount: Double

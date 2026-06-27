@@ -62,7 +62,6 @@ import com.renium.sipkasku.data.local.Category
 import com.renium.sipkasku.data.local.Pocket
 import com.renium.sipkasku.data.repository.CategoryRepository
 import com.renium.sipkasku.data.repository.PocketRepository
-import com.renium.sipkasku.data.repository.SettingsRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
 import com.renium.sipkasku.navigation.Screen.Settings
 import com.renium.sipkasku.utils.formatDate
@@ -80,8 +79,7 @@ fun AddTransactionScreen(
     navController: NavController,
     repository: TransactionRepository,
     pocketRepository: PocketRepository? = null,
-    categoryRepository: CategoryRepository? = null,
-    settingsRepository: SettingsRepository? = null
+    categoryRepository: CategoryRepository? = null
 ) {
 
     var title by rememberSaveable { mutableStateOf("") }
@@ -224,7 +222,7 @@ fun AddTransactionScreen(
                         if (cleanString.isEmpty()) {
                             amount = TextFieldValue("")
                         } else {
-                            val formatted = NumberFormat.getNumberInstance(Locale("id", "ID"))
+                            val formatted = NumberFormat.getNumberInstance(Locale.forLanguageTag("en-ID"))
                                 .format(cleanString.toLong())
                             amount = TextFieldValue(
                                 text = formatted,
@@ -372,8 +370,7 @@ fun AddTransactionScreen(
                 }
 
                 // Disable Save when pocket not chosen (mandatory) or insufficient balance
-                val saveEnabled =
-                    selectedPocketId != null && selectedPocketId != null && !insufficientBalance
+                val saveEnabled = selectedPocketId != null && !insufficientBalance
 
                 if (insufficientBalance) {
                     Text("Insufficient pocket balance for this expense.", color = AppsColors.ExpenseColor)
