@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -55,7 +56,12 @@ fun ExportTab(viewModel: StatisticsViewModel) {
             onNext = { viewModel.selectMonth(selectedMonth.plusMonths(1)) }
         )
 
-        Card(modifier = Modifier.fillMaxWidth()) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors (
+                MaterialTheme.colorScheme.surfaceContainerLow
+            )
+        ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Export Report", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(4.dp))

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -66,7 +67,7 @@ fun OverviewTab(viewModel: StatisticsViewModel) {
         // Period comparison
         item {
             Text("This Month vs Last Month", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(6.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -86,7 +87,7 @@ fun OverviewTab(viewModel: StatisticsViewModel) {
                     isPositiveGood = false
                 )
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
             ComparisonCard(
                 modifier = Modifier.fillMaxWidth(),
                 label = "Net",
@@ -100,7 +101,6 @@ fun OverviewTab(viewModel: StatisticsViewModel) {
         if (topExpenses.isNotEmpty()) {
             item {
                 Text("Top Expenses This Month", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(8.dp))
             }
             items(topExpenses) { cat ->
                 TopExpenseRow(cat)
@@ -110,7 +110,6 @@ fun OverviewTab(viewModel: StatisticsViewModel) {
         if (topIncomes.isNotEmpty()) {
             item {
                 Text("Top Incomes This Month", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(8.dp))
             }
             items(topIncomes) { cat ->
                 TopIncomeRow(cat)
@@ -137,14 +136,19 @@ fun ComparisonCard(
     }
     val arrow = if (growth >= 0) "↑" else "↓"
 
-    Card(modifier = modifier) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            MaterialTheme.colorScheme.surfaceContainerLow
+        )
+    ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(label, style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(2.dp))
             Text(formatRupiah(current), style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.height(2.dp))
+            Spacer(Modifier.height(1.dp))
             Text(
                 "$arrow ${"%.1f".format(kotlin.math.abs(growth))}%",
                 style = MaterialTheme.typography.labelSmall,
@@ -156,9 +160,14 @@ fun ComparisonCard(
 
 @Composable
 fun TopExpenseRow(cat: TopCategory) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            MaterialTheme.colorScheme.surfaceContainerLow
+        )
+    ) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -167,14 +176,14 @@ fun TopExpenseRow(cat: TopCategory) {
                 Text("${cat.transactionCount} transactions",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(2.dp))
                 LinearProgressIndicator(
                     progress = { (cat.percentage / 100).toFloat() },
                     modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.error
+                    color = AppsColors.ExpenseColor
                 )
             }
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(6.dp))
             Column(horizontalAlignment = Alignment.End) {
                 Text(formatRupiah(cat.amount), style = MaterialTheme.typography.bodyMedium,
                     color = AppsColors.ExpenseColor, fontWeight = FontWeight.SemiBold)
@@ -188,9 +197,14 @@ fun TopExpenseRow(cat: TopCategory) {
 
 @Composable
 fun TopIncomeRow(cat: TopCategory) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            MaterialTheme.colorScheme.surfaceContainerLow
+        )
+    ) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -203,10 +217,10 @@ fun TopIncomeRow(cat: TopCategory) {
                 LinearProgressIndicator(
                     progress = { (cat.percentage / 100).toFloat() },
                     modifier = Modifier.fillMaxWidth(),
-                    color = Color.Green
+                    color = AppsColors.IncomeColor
                 )
             }
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(6.dp))
             Column(horizontalAlignment = Alignment.End) {
                 Text(formatRupiah(cat.amount), style = MaterialTheme.typography.bodyMedium,
                     color = AppsColors.IncomeColor, fontWeight = FontWeight.SemiBold)

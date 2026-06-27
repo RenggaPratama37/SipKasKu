@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -98,7 +99,12 @@ fun CategoriesTab(viewModel: StatisticsViewModel) {
         } else {
             // Pie chart
             item {
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        MaterialTheme.colorScheme.surfaceContainerLow
+                    )
+                ) {
                     AndroidView(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -144,7 +150,12 @@ fun CategoriesTab(viewModel: StatisticsViewModel) {
 
 @Composable
 private fun CategoryBreakdownRow(cat: CategoryBreakdown) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            MaterialTheme.colorScheme.surfaceContainerLow
+        )
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -154,14 +165,14 @@ private fun CategoryBreakdownRow(cat: CategoryBreakdown) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(cat.categoryName, style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium)
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(2.dp))
                 LinearProgressIndicator(
                     progress = { (cat.percentage / 100).toFloat() },
                     modifier = Modifier.fillMaxWidth(),
                     color = if (cat.isIncome) AppsColors.IncomeColor else AppsColors.ExpenseColor
                 )
             }
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(10.dp))
             Column(horizontalAlignment = Alignment.End) {
                 Text(formatRupiah(cat.amount),
                     style = MaterialTheme.typography.bodyMedium,

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,8 +47,8 @@ fun TrendsTab(viewModel: StatisticsViewModel) {
     val cashflowPoints by viewModel.cashflowPoints.collectAsState()
     val selectedMonth by viewModel.selectedMonth.collectAsState()
 
-    val primaryColor = AppsColors.IncomeColor.toArgb()
-    val errorColor = AppsColors.ExpenseColor.toArgb()
+    val incomeColor = AppsColors.IncomeColor.toArgb()
+    val expenseColor = AppsColors.ExpenseColor.toArgb()
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
     val gridColor = MaterialTheme.colorScheme.outlineVariant.toArgb()
 
@@ -69,8 +70,13 @@ fun TrendsTab(viewModel: StatisticsViewModel) {
         if (dailyPoints.isNotEmpty()) {
             item {
                 Text("Daily This Month", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(8.dp))
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Spacer(Modifier.height(6.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        MaterialTheme.colorScheme.surfaceContainerLow
+                    )
+                ) {
                     AndroidView(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -102,11 +108,11 @@ fun TrendsTab(viewModel: StatisticsViewModel) {
                                 BarEntry(i.toFloat(), p.expense.toFloat())
                             }
                             val incomeSet = BarDataSet(incomeEntries, "Income").apply {
-                                color = primaryColor
+                                color = incomeColor
                                 setDrawValues(false)
                             }
                             val expenseSet = BarDataSet(expenseEntries, "Expense").apply {
-                                color = errorColor
+                                color = expenseColor
                                 setDrawValues(false)
                             }
                             val data = BarData(incomeSet, expenseSet).apply {
@@ -126,8 +132,13 @@ fun TrendsTab(viewModel: StatisticsViewModel) {
         if (cashflowPoints.isNotEmpty()) {
             item {
                 Text("Monthly Cashflow", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(8.dp))
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Spacer(Modifier.height(6.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        MaterialTheme.colorScheme.surfaceContainerLow
+                    )
+                ) {
                     AndroidView(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -153,8 +164,8 @@ fun TrendsTab(viewModel: StatisticsViewModel) {
                                 Entry(i.toFloat(), p.amount.toFloat())
                             }
                             val dataSet = LineDataSet(entries, "Net Cashflow").apply {
-                                color = primaryColor
-                                setCircleColor(primaryColor)
+                                color = incomeColor
+                                setCircleColor(incomeColor)
                                 lineWidth = 2f
                                 circleRadius = 4f
                                 setDrawValues(false)
@@ -173,10 +184,15 @@ fun TrendsTab(viewModel: StatisticsViewModel) {
         if (monthlySummaries.isNotEmpty()) {
             item {
                 Text("Monthly Summary", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(6.dp))
             }
             items(monthlySummaries) { m ->
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        MaterialTheme.colorScheme.surfaceContainerLow
+                    )
+                ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -199,7 +215,7 @@ fun TrendsTab(viewModel: StatisticsViewModel) {
                                 formatRupiah(m.income - m.expense),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
-                                color = if (m.income >= m.expense) AppsColors.ExpenseColor else AppsColors.IncomeColor
+                                color = if (m.income >= m.expense) AppsColors.IncomeColor else AppsColors.ExpenseColor
                             )
                         }
                     }
