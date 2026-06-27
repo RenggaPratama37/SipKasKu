@@ -202,7 +202,9 @@ fun MainScreen(
                         navController.navigate(
                             Screen.AddTransaction.route
                         )
-                    }
+                    },
+                    containerColor = MaterialTheme.colorScheme.tertiary,
+                    contentColor = MaterialTheme.colorScheme.onTertiary
                 ) {
                     Icon(
                         imageVector = Screen.AddTransaction.icon,

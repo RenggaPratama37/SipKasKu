@@ -34,7 +34,7 @@ fun BalanceCard(
             Text(
                 text = "Total Balance",
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.tertiary
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
