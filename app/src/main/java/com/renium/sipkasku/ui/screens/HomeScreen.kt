@@ -12,8 +12,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.navigation.NavController
 import com.renium.sipkasku.data.repository.PocketRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
+import com.renium.sipkasku.navigation.Screen
 import com.renium.sipkasku.ui.components.BalanceCard
 import com.renium.sipkasku.ui.components.EmptyState
 import com.renium.sipkasku.ui.components.SwipeableTransactionItem
@@ -25,7 +27,8 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     repository: TransactionRepository,
     snackbarHostState: SnackbarHostState,
-    pocketRepository: PocketRepository? = null
+    pocketRepository: PocketRepository? = null,
+    navController: NavController
 ) {
     val viewModel: HomeViewModel = viewModel(
         factory = TransactionViewModelFactory(repository, pocketRepository)
@@ -237,6 +240,9 @@ fun HomeScreen(
                                     viewModel.restoreTransaction(transaction)
                                 }
                             }
+                        },
+                        onClick = {
+                            navController.navigate(Screen.TransactionDetail.createRoute(transaction.id))
                         }
                     )
                 }

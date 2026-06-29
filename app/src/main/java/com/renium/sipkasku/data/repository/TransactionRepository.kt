@@ -34,4 +34,8 @@ class TransactionRepository(
         endOfDay: Long
     ): Int = dao.countByRecurringAndDate(recurringId, startOfDay, endOfDay)
 
+    suspend fun getById (id: Int): TransactionEntity? = dao.getById(id)
+
+    suspend fun updateTransaction(transaction: TransactionEntity) = dao.updateTransaction(transaction)
+
 }

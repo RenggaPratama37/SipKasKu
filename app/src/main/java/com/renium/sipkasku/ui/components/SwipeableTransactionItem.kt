@@ -35,8 +35,9 @@ import kotlin.math.roundToInt
 fun SwipeableTransactionItem(
     transaction: TransactionEntity,
     onDelete: () -> Unit,
+    onClick:() -> Unit = {},
     pocketName: String? = null,
-    categoryName: String? = null  
+    categoryName: String? = null
 ) {
 
     var offsetX by remember {
@@ -66,7 +67,7 @@ fun SwipeableTransactionItem(
                 .align(Alignment.CenterEnd)
                 .clip(MaterialTheme.shapes.medium)
                 .background(Color.Red)
-                .padding(end=2.dp),
+                .padding(end = 2.dp),
 
             contentAlignment = Alignment.CenterEnd
         ) {
@@ -96,9 +97,8 @@ fun SwipeableTransactionItem(
                 }
                 .pointerInput(Unit) {
                     detectHorizontalDragGestures(
-                        onHorizontalDrag = {
-                                _,
-                                dragAmount ->
+                        onHorizontalDrag = { _,
+                                             dragAmount ->
                             offsetX += dragAmount
                             if (offsetX > 0f) {
                                 offsetX = 0f
@@ -118,11 +118,12 @@ fun SwipeableTransactionItem(
                     )
                 }
         ) {
-                TransactionItem(
-                    transaction = transaction,
-                    pocketName = pocketName,
-                    categoryName = categoryName 
-                )
+            TransactionItem(
+                transaction = transaction,
+                pocketName = pocketName,
+                categoryName = categoryName,
+                onClick = onClick
+            )
         }
     }
 }

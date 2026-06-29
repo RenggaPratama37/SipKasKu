@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 
 import kotlinx.coroutines.flow.Flow
 
@@ -50,4 +51,12 @@ interface TransactionDao {
         SELECT COUNT(*) FROM transactions WHERE categoryId = :categoryId
     """)
     suspend fun countByCategoryId(categoryId: Int): Int
+
+    @Query("""
+        SELECT * FROM transactions WHERE id = :id LIMIT 1
+    """)
+    suspend fun getById(id:Int): TransactionEntity?
+
+    @Update
+    suspend fun updateTransaction(transaction: TransactionEntity)
 }

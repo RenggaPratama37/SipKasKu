@@ -15,4 +15,6 @@ class CategoryRepository(
     suspend fun insert(category: Category) = dao.insert(category)
 
     suspend fun delete(category: Category) = dao.delete(category)
+
+    suspend fun getCategoryById(id: Int): Category? = dao.getById(id)
 }

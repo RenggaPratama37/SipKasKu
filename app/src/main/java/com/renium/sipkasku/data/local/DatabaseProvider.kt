@@ -116,6 +116,14 @@ object DatabaseProvider {
         }
     }
 
+    private val MIGRATION_6_7 = object : Migration(6,7) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL(
+                "ALTER TABLE `transactions` ADD COLUMN `note` TEXT DEFAULT NULL"
+            )
+        }
+    }
+
     fun get(context: Context) : AppDatabase {
         return instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(
@@ -123,7 +131,14 @@ object DatabaseProvider {
                 AppDatabase::class.java,
                 "money_manager_db"
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                .addMigrations(
+                    MIGRATION_1_2,
+                    MIGRATION_2_3,
+                    MIGRATION_3_4,
+                    MIGRATION_4_5,
+                    MIGRATION_5_6,
+                    MIGRATION_6_7
+                )
                 .build()
                 .also { instance= it }
         }

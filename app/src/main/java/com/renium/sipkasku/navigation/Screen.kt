@@ -33,4 +33,20 @@ sealed class Screen(
         title = "Add",
         icon = Icons.Default.Add
     )
+
+    object TransactionDetail : Screen(
+        route = "transaction_detail/{transactionId}",
+        title = "Detail",
+        icon = Icons.Default.Info
+    ) {
+        fun createRoute(transactionId: Int) = "transaction_detail/$transactionId"
+    }
+
+    object EditTransaction : Screen(
+        route = "edit_transaction/{transactionId}",
+        title = "Edit",
+        icon = Icons.Default.Edit
+    ) {
+        fun createRoute(transactionId: Int) = "edit_transaction/$transactionId"
+    }
 }

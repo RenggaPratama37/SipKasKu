@@ -19,7 +19,8 @@ import java.time.format.DateTimeFormatter
 fun TransactionItem(
     transaction: TransactionEntity,
     pocketName: String? = null,
-    categoryName: String? = null
+    categoryName: String? = null,
+    onClick: () -> Unit = {}
 ) {
     val dateStr = Instant.ofEpochMilli(transaction.date)
         .atZone(ZoneId.systemDefault())
@@ -30,6 +31,7 @@ fun TransactionItem(
         .joinToString(" · ")
 
     Card(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow

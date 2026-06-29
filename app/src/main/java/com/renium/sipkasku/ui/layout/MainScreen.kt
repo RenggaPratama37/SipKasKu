@@ -30,10 +30,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.renium.sipkasku.data.local.Category
 import com.renium.sipkasku.data.repository.CategoryRepository
 import com.renium.sipkasku.data.repository.PocketRepository
@@ -45,6 +47,7 @@ import com.renium.sipkasku.ui.screens.AddTransactionScreen
 import com.renium.sipkasku.ui.screens.HomeScreen
 import com.renium.sipkasku.ui.screens.SettingsScreen
 import com.renium.sipkasku.ui.screens.StatisticsScreen
+import com.renium.sipkasku.ui.screens.TransactionDetailScreen
 import com.renium.sipkasku.ui.screens.settings.AppearanceSettingsScreen
 import com.renium.sipkasku.ui.screens.settings.CategorySettingsScreen
 import com.renium.sipkasku.ui.screens.settings.PocketSettingsScreen
@@ -130,6 +133,9 @@ fun MainScreen(
                             "category_settings" -> "Category Settings"
                             "appearance_settings" -> "Appearance Settings"
                             "recurring_settings" -> "Systematic Recurring Transaction"
+
+                            "transaction_detail/{transactionId}" -> "Transaction Detail"
+                            "edit_transaction/{transactionId}" -> "Edit Transaction"
 
                             else -> "SipKasku"
                         },
@@ -226,7 +232,8 @@ fun MainScreen(
                 HomeScreen(
                     repository = repository,
                     snackbarHostState = snackbarHostState,
-                    pocketRepository = pocketRepository
+                    pocketRepository = pocketRepository,
+                    navController = navController
                 )
             }
 
@@ -309,6 +316,34 @@ fun MainScreen(
                     recurringRepository = recurringRepository,
                     categoryRepository = categoryRepository,
                     pocketRepository = pocketRepository
+                )
+            }
+
+            composable(
+                "transaction_detail/{transactionId}",
+                arguments = listOf(navArgument("transactionId") { type = NavType.IntType})
+            ) { backStack ->
+                val txId = backStack.arguments?.getInt("transactionId")?: return@composable
+                TransactionDetailScreen(
+                    transactionId = txId,
+                    navController= navController,
+                    transactionRepository = repository,
+                    categoryRepository = categoryRepository,
+                    pocketRepository = pocketRepository
+                )
+            }
+
+            composable(
+                "edit_transaction/{transactionId}",
+                arguments = listOf(navArgument("transactionId") { type = NavType.IntType})
+            ) { backStack ->
+                val txId = backStack.arguments?.getInt("transactionId") ?: return@composable
+                AddTransactionScreen(
+                    navController = navController,
+                    repository = repository,
+                    pocketRepository = pocketRepository,
+                    categoryRepository = categoryRepository,
+                    transactionId = txId
                 )
             }
         }

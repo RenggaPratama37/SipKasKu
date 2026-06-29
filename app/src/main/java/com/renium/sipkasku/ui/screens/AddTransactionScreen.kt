@@ -79,7 +79,8 @@ fun AddTransactionScreen(
     navController: NavController,
     repository: TransactionRepository,
     pocketRepository: PocketRepository? = null,
-    categoryRepository: CategoryRepository? = null
+    categoryRepository: CategoryRepository? = null,
+    transactionId: Int? = null
 ) {
 
     var title by rememberSaveable { mutableStateOf("") }
@@ -106,6 +107,8 @@ fun AddTransactionScreen(
     }
 
     var showDatePicker by remember { mutableStateOf(false) }
+
+    var note by rememberSaveable { mutableStateOf("") }
 
     // categories loaded from repository if available; fallback to defaults
     val incomeCategories: List<Category> = categoryRepository?.getByType("INCOME")
@@ -164,7 +167,25 @@ fun AddTransactionScreen(
     val insufficientBalance =
         !isIncome && selectedPocketId != null && parsedAmount > selectedPocketBalance
 
+    // Edit Mode
+    val isEditMode = transactionId != null
 
+    LaunchedEffect(transactionId) {
+        if(transactionId != null) {
+            val existing = repository.getById(transactionId) ?: return@LaunchedEffect
+            title = existing.title
+            val formatted = NumberFormat.getNumberInstance(
+                Locale.forLanguageTag("id-ID")
+            ).format(existing.amount.toLong())
+            amount = TextFieldValue(formatted, selection = TextRange(formatted.length))
+            isIncome = existing.isIncome
+            selectedDate = existing.date
+            selectedPocketId = existing.pocketId
+            note = existing.note ?:""
+            val cat = existing.categoryId?.let {categoryRepository?.getCategoryById(it)}
+            selectedCategory = cat?.name ?:""
+        }
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize(),
@@ -222,7 +243,7 @@ fun AddTransactionScreen(
                         if (cleanString.isEmpty()) {
                             amount = TextFieldValue("")
                         } else {
-                            val formatted = NumberFormat.getNumberInstance(Locale.forLanguageTag("en-ID"))
+                            val formatted = NumberFormat.getNumberInstance(Locale.forLanguageTag("id-ID"))
                                 .format(cleanString.toLong())
                             amount = TextFieldValue(
                                 text = formatted,
@@ -233,6 +254,15 @@ fun AddTransactionScreen(
                     label = { Text("Amount") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = note,
+                    onValueChange = { note = it },
+                    label = { Text("Note (Optional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
+                    maxLines = 5
                 )
 
                 OutlinedButton(
@@ -390,25 +420,36 @@ fun AddTransactionScreen(
                         }
 
                         scope.launch {
-                            val ok = viewModel.trySaveTransaction(
-                                title = title,
-                                amount = parsed,
-                                categoryId = categoryId,
-                                isIncome = isIncome,
-                                date = selectedDate,
-                                pocketId = selectedPocketId
-                            )
-                            if (ok) {
-                                navController.popBackStack()
+                            val ok = if(isEditMode) {
+                                viewModel.tryUpdateTransaction(
+                                    id = transactionId,
+                                    title = title,
+                                    amount = parsed,
+                                    categoryId = categoryId,
+                                    isIncome = isIncome,
+                                    date = selectedDate,
+                                    pocketId = selectedPocketId,
+                                    note = note.ifBlank{ null }
+                                )
                             } else {
-                                showBalanceError = true
+                                viewModel.trySaveTransaction(
+                                    title = title,
+                                    amount = parsed,
+                                    categoryId = categoryId,
+                                    isIncome = isIncome,
+                                    date = selectedDate,
+                                    pocketId = selectedPocketId,
+                                    note = note.ifBlank{ null }
+                                )
                             }
+                            if (ok) navController.popBackStack()
+                            else showBalanceError = true
                         }
                     },
                     enabled = saveEnabled,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = if (isIncome) AppsColors.IncomeColor else AppsColors.ExpenseColor)
-                ) { Text("Save", color = Color.White) }
+                ) { Text(if(isEditMode) "Save changes" else "Save", color = Color.White) }
             }
         }
 
