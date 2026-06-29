@@ -47,7 +47,7 @@ fun SettingsScreen(
         item {
             Card (
                 onClick = {
-                    navController.navigate("Pocket_settings")
+                    navController.navigate("pocket_settings")
                 },
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLow
