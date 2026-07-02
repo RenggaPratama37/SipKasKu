@@ -1,23 +1,54 @@
 package com.renium.sipkasku.ui.screens.settings
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.renium.sipkasku.data.local.Recurring
+import androidx.navigation.NavController
+import com.renium.sipkasku.data.local.Category
+import com.renium.sipkasku.data.local.Pocket
 import com.renium.sipkasku.data.local.RecurrenceFrequency
-import com.renium.sipkasku.data.repository.RecurringRepository
+import com.renium.sipkasku.data.local.Recurring
 import com.renium.sipkasku.data.repository.CategoryRepository
 import com.renium.sipkasku.data.repository.PocketRepository
+import com.renium.sipkasku.data.repository.RecurringRepository
 import com.renium.sipkasku.ui.theme.AppsColors
 import com.renium.sipkasku.utils.formatRupiah
 import kotlinx.coroutines.launch
@@ -25,6 +56,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecurringSettingsScreen(
+    navController: NavController,
     recurringRepository: RecurringRepository?,
     categoryRepository: CategoryRepository?,
     pocketRepository: PocketRepository?
@@ -40,8 +72,6 @@ fun RecurringSettingsScreen(
     
     val pockets by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList())
         ?: remember { mutableStateOf(emptyList()) }
-
-    var showAddDialog by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier
@@ -59,7 +89,7 @@ fun RecurringSettingsScreen(
 
         item {
             Button(
-                onClick = { showAddDialog = true },
+                onClick = { navController.navigate("add_recurring") },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(Icons.Default.Add, null)
@@ -119,26 +149,13 @@ fun RecurringSettingsScreen(
         }
     }
 
-    if (showAddDialog) {
-        AddRecurringPlanDialog(
-            onDismiss = { showAddDialog = false },
-            onSave = { plan ->
-                scope.launch {
-                    recurringRepository?.insert(plan)
-                    showAddDialog = false
-                }
-            },
-            categories = categories,
-            pockets = pockets
-        )
-    }
 }
 
 @Composable
 private fun RecurringPlanCard(
     recurring: Recurring,
-    categories: List<com.renium.sipkasku.data.local.Category>,
-    pockets: List<com.renium.sipkasku.data.local.Pocket>,
+    categories: List<Category>,
+    pockets: List<Pocket>,
     onDelete: () -> Unit,
     onToggle: () -> Unit
 ) {
@@ -310,293 +327,3 @@ private fun DetailChip(
         )
     }
 }
-
-@Composable
-private fun AddRecurringPlanDialog(
-    onDismiss: () -> Unit,
-    onSave: (Recurring) -> Unit,
-    categories: List<com.renium.sipkasku.data.local.Category>,
-    pockets: List<com.renium.sipkasku.data.local.Pocket>
-) {
-    var title by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
-    var isIncome by remember { mutableStateOf(false) }
-    var frequency by remember { mutableStateOf(RecurrenceFrequency.MONTHLY.name) }
-    var dayOfMonth by remember { mutableStateOf("1") }
-    var selectedCategoryId by remember { mutableStateOf<Int?>(null) }
-    var selectedPocketId by remember { mutableStateOf<Int?>(null) }
-    var validationError by remember { mutableStateOf("") }
-
-    val parsedAmount = amount.toDoubleOrNull() ?: 0.0
-    val isFormValid = title.isNotBlank() && 
-                      parsedAmount > 0 && 
-                      selectedCategoryId != null && 
-                      selectedPocketId != null
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text("Create Systematic Plan")
-        },
-        text = {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                item {
-                    // Title
-                    OutlinedTextField(
-                        value = title,
-                        onValueChange = { title = it },
-                        label = { Text("Plan Name") },
-                        placeholder = { Text("e.g., Monthly Savings") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                }
-
-                item {
-                    // Income/Expense toggle
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        FilterChip(
-                            selected = !isIncome,
-                            onClick = { isIncome = false },
-                            label = { Text("Expense") },
-                            modifier = Modifier.weight(1f)
-                        )
-                        FilterChip(
-                            selected = isIncome,
-                            onClick = { isIncome = true },
-                            label = { Text("Income") },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-
-                item {
-                    // Amount
-                    OutlinedTextField(
-                        value = amount,
-                        onValueChange = { amount = it },
-                        label = { Text("Amount") },
-                        placeholder = { Text("e.g., 1000000") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                }
-
-                item {
-                    Text("Frequency", style = MaterialTheme.typography.labelMedium)
-                    FrequencySelector(
-                        selected = frequency,
-                        onSelect = { frequency = it },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                if (frequency == RecurrenceFrequency.SPECIFIC_DAY.name) {
-                    item {
-                        OutlinedTextField(
-                            value = dayOfMonth,
-                            onValueChange = {
-                                val day = it.toIntOrNull() ?: 1
-                                dayOfMonth = day.coerceIn(1, 31).toString()
-                            },
-                            label = { Text("Day of Month") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true
-                        )
-                    }
-                }
-
-                item {
-                    Text("Category *", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.error)
-                    if (categories.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    MaterialTheme.colorScheme.errorContainer,
-                                    MaterialTheme.shapes.small
-                                )
-                                .padding(12.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                "Please create a category first in Category Settings",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    } else {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                categories.forEach { cat ->
-                                    FilterChip(
-                                        selected = selectedCategoryId == cat.id,
-                                        onClick = { selectedCategoryId = cat.id },
-                                        label = { Text(cat.name) }
-                                    )
-                                }
-                            }
-                            if (selectedCategoryId == null) {
-                                Text(
-                                    "Please select a category",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        }
-                    }
-                }
-
-                item {
-                    Text("Pocket *", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.error)
-                    if (pockets.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    MaterialTheme.colorScheme.errorContainer,
-                                    MaterialTheme.shapes.small
-                                )
-                                .padding(12.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                "Please create a pocket first in Pocket Settings",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    } else {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                pockets.forEach { pocket ->
-                                    FilterChip(
-                                        selected = selectedPocketId == pocket.id,
-                                        onClick = { selectedPocketId = pocket.id },
-                                        label = { Text(pocket.name) }
-                                    )
-                                }
-                            }
-                            if (selectedPocketId == null) {
-                                Text(
-                                    "Please select a pocket",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        }
-                    }
-                }
-
-                if (validationError.isNotEmpty()) {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    MaterialTheme.colorScheme.errorContainer,
-                                    MaterialTheme.shapes.small
-                                )
-                                .padding(12.dp)
-                        ) {
-                            Text(
-                                validationError,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    validationError = ""
-                    when {
-                        title.isBlank() -> validationError = "Plan name is required"
-                        parsedAmount <= 0 -> validationError = "Amount must be greater than 0"
-                        selectedCategoryId == null -> validationError = "Category is required"
-                        selectedPocketId == null -> validationError = "Pocket is required"
-                        else -> {
-                            val plan = Recurring(
-                                title = title,
-                                amount = parsedAmount,
-                                categoryId = selectedCategoryId,
-                                pocketId = selectedPocketId,
-                                isIncome = isIncome,
-                                frequency = frequency,
-                                dayOfMonth = dayOfMonth.toIntOrNull() ?: 1,
-                                isActive = true
-                            )
-                            onSave(plan)
-                        }
-                    }
-                },
-                enabled = isFormValid
-            ) {
-                Text("Create")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-
-@Composable
-private fun FrequencySelector(
-    selected: String,
-    onSelect: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        listOf(
-            RecurrenceFrequency.DAILY.name to "Daily",
-            RecurrenceFrequency.WEEKLY.name to "Weekly",
-            RecurrenceFrequency.MONTHLY.name to "Monthly",
-            RecurrenceFrequency.SPECIFIC_DAY.name to "Specific Day",
-            RecurrenceFrequency.END_OF_MONTH.name to "End of Month"
-        ).forEach { (freq, label) ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = selected == freq,
-                    onClick = { onSelect(freq) }
-                )
-                Text(label, modifier = Modifier.padding(start = 8.dp))
-            }
-        }
-    }
-}
-

@@ -48,6 +48,7 @@ import com.renium.sipkasku.ui.screens.HomeScreen
 import com.renium.sipkasku.ui.screens.SettingsScreen
 import com.renium.sipkasku.ui.screens.StatisticsScreen
 import com.renium.sipkasku.ui.screens.TransactionDetailScreen
+import com.renium.sipkasku.ui.screens.settings.AddRecurringScreen
 import com.renium.sipkasku.ui.screens.settings.AppearanceSettingsScreen
 import com.renium.sipkasku.ui.screens.settings.CategorySettingsScreen
 import com.renium.sipkasku.ui.screens.settings.PocketSettingsScreen
@@ -136,6 +137,8 @@ fun MainScreen(
 
                             "transaction_detail/{transactionId}" -> "Transaction Detail"
                             "edit_transaction/{transactionId}" -> "Edit Transaction"
+
+                            "add_recurring" -> "Create Recurring Plan"
 
                             else -> "SipKasku"
                         },
@@ -313,6 +316,7 @@ fun MainScreen(
 
             composable("recurring_settings") {
                 RecurringSettingsScreen(
+                    navController = navController,
                     recurringRepository = recurringRepository,
                     categoryRepository = categoryRepository,
                     pocketRepository = pocketRepository
@@ -344,6 +348,17 @@ fun MainScreen(
                     pocketRepository = pocketRepository,
                     categoryRepository = categoryRepository,
                     transactionId = txId
+                )
+            }
+
+            composable(
+                "add_recurring"
+            ) {
+                AddRecurringScreen(
+                    navController = navController,
+                    recurringRepository = recurringRepository,
+                    categoryRepository = categoryRepository,
+                    pocketRepository = pocketRepository
                 )
             }
         }

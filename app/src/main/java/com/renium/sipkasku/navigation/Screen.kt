@@ -49,4 +49,10 @@ sealed class Screen(
     ) {
         fun createRoute(transactionId: Int) = "edit_transaction/$transactionId"
     }
+
+    object AddRecurring : Screen(
+        route = "add_recurring",
+        title = "Add Recurring Plan",
+        icon = Icons.Default.Add
+    )
 }
