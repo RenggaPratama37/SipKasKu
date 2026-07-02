@@ -47,18 +47,10 @@ kotlin {
 dependencies {
 
     implementation(libs.androidx.compose.animation)
-    implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.remote.creation.core)
-    implementation(libs.androidx.compose.runtime)
-    implementation(libs.androidx.compose.ui.text)
-    implementation(libs.androidx.core.i18n)
     // Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.navigation.common.ktx)
-    implementation(libs.androidx.navigation.runtime.ktx)
-    implementation(libs.androidx.ui)
     implementation(libs.material)
 
     // Compose
