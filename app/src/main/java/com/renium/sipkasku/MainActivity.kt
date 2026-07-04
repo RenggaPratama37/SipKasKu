@@ -18,7 +18,9 @@ import com.renium.sipkasku.data.repository.RecurringRepository
 import com.renium.sipkasku.data.repository.SettingsRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
 import com.renium.sipkasku.ui.layout.MainScreen
+import com.renium.sipkasku.ui.theme.SipKasKuTheme
 import com.renium.sipkasku.utils.NotificationHelper
+import com.renium.sipkasku.work.RecurringWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -44,10 +46,10 @@ class MainActivity : ComponentActivity() {
         val recurringRepository = RecurringRepository(db.recurringDao())
         val settingsRepository = SettingsRepository(applicationContext)
 
-        val periodic = PeriodicWorkRequestBuilder<com.renium.sipkasku.work.RecurringWorker>(1, TimeUnit.DAYS)
+        val periodic = PeriodicWorkRequestBuilder<RecurringWorker>(1, TimeUnit.DAYS)
             .build()
 
-        val oneTime = androidx.work.OneTimeWorkRequestBuilder<com.renium.sipkasku.work.RecurringWorker>()
+        val oneTime = androidx.work.OneTimeWorkRequestBuilder<RecurringWorker>()
             .build()
 
         WorkManager.getInstance(applicationContext).enqueue(oneTime)
@@ -73,7 +75,7 @@ class MainActivity : ComponentActivity() {
                 else -> androidx.compose.foundation.isSystemInDarkTheme()
             }
 
-            com.renium.sipkasku.ui.theme.SipKasKuTheme(useDarkTheme = useDark) {
+            SipKasKuTheme(useDarkTheme = useDark) {
                 Surface {
                     MainScreen(
                         transactionRepository,
@@ -96,7 +98,6 @@ class MainActivity : ComponentActivity() {
                         1001
                     )
                 }
-
         }
     }
 }
