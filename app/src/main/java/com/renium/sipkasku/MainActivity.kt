@@ -1,5 +1,6 @@
 package com.renium.sipkasku
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +18,7 @@ import com.renium.sipkasku.data.repository.RecurringRepository
 import com.renium.sipkasku.data.repository.SettingsRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
 import com.renium.sipkasku.ui.layout.MainScreen
+import com.renium.sipkasku.utils.NotificationHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -82,6 +84,19 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+        }
+
+        NotificationHelper.createChannels(this)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(
+                        arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                        1001
+                    )
+                }
+
         }
     }
 }

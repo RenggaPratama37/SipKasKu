@@ -9,6 +9,7 @@ import com.renium.sipkasku.data.local.TransactionEntity
 import com.renium.sipkasku.data.repository.PocketRepository
 import com.renium.sipkasku.data.repository.RecurringRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
+import com.renium.sipkasku.utils.NotificationHelper
 import kotlinx.coroutines.flow.first
 import java.util.Calendar
 
@@ -103,6 +104,11 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
                         } else {
                             true
                         }
+
+                        val pocketName = r.pocketId?.let {
+                            pocketRepository.getPocketById(it)?.name
+                        }?:"Pocket"
+
                         if (sufficientBalance) {
                             transactionRepository.insertTransaction(
                                 TransactionEntity(
@@ -125,18 +131,28 @@ class RecurringWorker(appContext: Context, params: WorkerParameters) : Coroutine
                                 lastRun = System.currentTimeMillis(),
                                 lastFailedRun = 0L
                             ))
+
+                            NotificationHelper.notifySuccess(
+                                context = applicationContext,
+                                title = r.title,
+                                amount = r.amount
+                            )
                         } else {
                             recurringRepository.update(r.copy(
                                 lastFailedRun = System.currentTimeMillis()
                             ))
-                            android.util.Log.w("Recurring Worker", "Skipped '$(r.title)': insufficient balance")
+                            NotificationHelper.notifyFailed(
+                                context = applicationContext,
+                                title = r.title,
+                                amount = r.amount,
+                                pocketName = pocketName
+                            )
                         }
                     }
                 }
             }
 
-        } catch (t: Throwable) {
-            android.util.Log.e("RecurringWorker", "Error processing recurrings", t)
+        } catch (_: Throwable) {
             return Result.failure()
         }
 
