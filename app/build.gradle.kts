@@ -47,6 +47,7 @@ kotlin {
 
 dependencies {
 
+    implementation(libs.androidx.animation)
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.remote.creation.core)
     // Core

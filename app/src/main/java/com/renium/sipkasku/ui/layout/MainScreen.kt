@@ -1,9 +1,14 @@
 package com.renium.sipkasku.ui.layout
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.EaseInCubic
+import androidx.compose.animation.core.EaseOutCubic
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -81,8 +86,8 @@ fun MainScreen(
     val route = currentRoute
         ?.destination
         ?.route
-    
-     
+
+
     val isRootScreen = route in listOf(
         Screen.Home.route,
         Screen.Statistics.route,
@@ -95,7 +100,7 @@ fun MainScreen(
 
     if (categoryRepository == null || recurringRepository == null) return
 
-    val categoryViewModel: CategoryViewModel = viewModel (
+    val categoryViewModel: CategoryViewModel = viewModel(
         factory = CategoryViewModelFactory(
             categoryRepository = categoryRepository,
             transactionRepository = repository,
@@ -115,7 +120,7 @@ fun MainScreen(
                 expandedHeight = 64.dp,
                 title = {
                     Text(
-                        text = when(route) {
+                        text = when (route) {
                             Screen.Home.route -> "SipKasKu"
                             Screen.Statistics.route -> "Statistics"
                             Screen.Settings.route -> "Settings"
@@ -139,7 +144,7 @@ fun MainScreen(
                     )
                 },
                 navigationIcon = {
-                    if(!isRootScreen) {
+                    if (!isRootScreen) {
                         IconButton(
                             onClick = {
                                 navController.popBackStack()
@@ -156,8 +161,8 @@ fun MainScreen(
         },
 
         bottomBar = {
-            AnimatedVisibility (
-                visible =  isRootScreen,
+            AnimatedVisibility(
+                visible = isRootScreen,
                 enter = slideInVertically { it } + fadeIn(),
                 exit = slideOutVertically { it } + fadeOut()
             ) {
@@ -217,10 +222,39 @@ fun MainScreen(
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
-            modifier = Modifier.padding(padding)
+            modifier = Modifier.padding(padding),
+            enterTransition = {
+                slideInHorizontally(
+                    initialOffsetX = { it },
+                    animationSpec = tween(300, easing = EaseOutCubic)
+                ) + fadeIn(animationSpec = tween(300))
+            },
+            exitTransition = {
+                slideOutHorizontally(
+                    targetOffsetX = { -it / 3 },
+                    animationSpec = tween(300, easing = EaseInCubic)
+                ) + fadeOut(animationSpec = tween(150))
+            },
+            popEnterTransition = {
+                slideInHorizontally(
+                    initialOffsetX = { -it / 3 },
+                    animationSpec = tween (300, easing = EaseOutCubic)
+                ) +fadeIn(animationSpec = tween(300))
+
+            },
+            popExitTransition = {
+                slideOutHorizontally(
+                    targetOffsetX = { it },
+                    animationSpec = tween (300, easing = EaseInCubic)
+                ) +fadeOut(animationSpec = tween(150))
+            }
         ) {
             composable(
-                Screen.Home.route
+                Screen.Home.route,
+                enterTransition = { fadeIn(tween(200)) },
+                exitTransition = { fadeOut(tween(200)) },
+                popEnterTransition = { fadeIn(tween(200)) },
+                popExitTransition = { fadeOut(tween(200)) }
             ) {
 
                 HomeScreen(
@@ -232,7 +266,11 @@ fun MainScreen(
             }
 
             composable(
-                Screen.Statistics.route
+                Screen.Statistics.route,
+                enterTransition = { fadeIn(tween(200)) },
+                exitTransition = { fadeOut(tween(200)) },
+                popEnterTransition = { fadeIn(tween(200)) },
+                popExitTransition = { fadeOut(tween(200)) }
             ) {
                 StatisticsScreen(
                     repository = repository,
@@ -242,7 +280,11 @@ fun MainScreen(
             }
 
             composable(
-                Screen.Settings.route
+                Screen.Settings.route,
+                enterTransition = { fadeIn(tween(200)) },
+                exitTransition = { fadeOut(tween(200)) },
+                popEnterTransition = { fadeIn(tween(200)) },
+                popExitTransition = { fadeOut(tween(200)) }
             ) {
                 SettingsScreen(
                     navController = navController
@@ -325,12 +367,12 @@ fun MainScreen(
 
             composable(
                 "transaction_detail/{transactionId}",
-                arguments = listOf(navArgument("transactionId") { type = NavType.IntType})
+                arguments = listOf(navArgument("transactionId") { type = NavType.IntType })
             ) { backStack ->
-                val txId = backStack.arguments?.getInt("transactionId")?: return@composable
+                val txId = backStack.arguments?.getInt("transactionId") ?: return@composable
                 TransactionDetailScreen(
                     transactionId = txId,
-                    navController= navController,
+                    navController = navController,
                     transactionRepository = repository,
                     categoryRepository = categoryRepository,
                     pocketRepository = pocketRepository
@@ -339,7 +381,7 @@ fun MainScreen(
 
             composable(
                 "edit_transaction/{transactionId}",
-                arguments = listOf(navArgument("transactionId") { type = NavType.IntType})
+                arguments = listOf(navArgument("transactionId") { type = NavType.IntType })
             ) { backStack ->
                 val txId = backStack.arguments?.getInt("transactionId") ?: return@composable
                 AddTransactionScreen(
