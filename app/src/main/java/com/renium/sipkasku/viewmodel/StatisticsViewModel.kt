@@ -26,14 +26,17 @@ class StatisticsViewModel(
     // Raw data
     val transactions: StateFlow<List<TransactionEntity>> =
         transactionRepository.getAllTransactions()
+            .distinctUntilChanged()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val allCategories: StateFlow<List<Category>> =
         categoryRepository.getAll()
+            .distinctUntilChanged()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val allPockets: StateFlow<List<Pocket>> =
         pocketRepository.getAllPockets()
+            .distinctUntilChanged()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Filters
@@ -56,7 +59,9 @@ class StatisticsViewModel(
                 val matchPocket = pocketId == null || tx.pocketId == pocketId
                 matchMonth && matchPocket
             }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }
+            .distinctUntilChanged()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Overview
     val periodComparison: StateFlow<PeriodComparison> =
@@ -75,7 +80,9 @@ class StatisticsViewModel(
                 previousIncome = previous.filter { it.isIncome }.sumOf { it.amount },
                 previousExpense = previous.filter { !it.isIncome }.sumOf { it.amount }
             )
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PeriodComparison(0.0, 0.0, 0.0, 0.0))
+        }
+            .distinctUntilChanged()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PeriodComparison(0.0, 0.0, 0.0, 0.0))
 
     // Top Expense Categories
     val topExpenseCategories: StateFlow<List<TopCategory>> =
@@ -95,7 +102,9 @@ class StatisticsViewModel(
                 }
                 .sortedByDescending { it.amount }
                 .take(5)
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }
+            .distinctUntilChanged()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Top Income Categories
     val topIncomeCategories: StateFlow<List<TopCategory>> =
@@ -115,7 +124,9 @@ class StatisticsViewModel(
                 }
                 .sortedByDescending { it.amount }
                 .take(5)
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }
+            .distinctUntilChanged()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Trends
     val monthlySummaries: StateFlow<List<MonthlySummary>> =
@@ -135,7 +146,9 @@ class StatisticsViewModel(
             }
             .filter { it.income > 0 || it.expense > 0 }
             .sortedByDescending { it.sortKey }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }
+            .distinctUntilChanged()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val dailyPoints: StateFlow<List<DailyPoint>> =
         filteredTransactions.map { txList ->
@@ -149,7 +162,9 @@ class StatisticsViewModel(
                     expense = items.filter { !it.isIncome }.sumOf { it.amount }
                 )
             }.sortedBy { it.dayLabel }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }
+            .distinctUntilChanged()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val cashflowPoints: StateFlow<List<CashflowPoint>> =
         transactions.map { txList ->
@@ -164,7 +179,9 @@ class StatisticsViewModel(
                         amount = items.sumOf { if (it.isIncome) it.amount else -it.amount }
                     )
                 }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }
+            .distinctUntilChanged()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Categories
     val expenseBreakdown: StateFlow<List<CategoryBreakdown>> =
@@ -183,7 +200,9 @@ class StatisticsViewModel(
                         isIncome = false
                     )
                 }.sortedByDescending { it.amount }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }
+            .distinctUntilChanged()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val incomeBreakdown: StateFlow<List<CategoryBreakdown>> =
         combine(filteredTransactions, allCategories) { txList, cats ->
@@ -201,7 +220,9 @@ class StatisticsViewModel(
                         isIncome = true
                     )
                 }.sortedByDescending { it.amount }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }
+            .distinctUntilChanged()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Export
     val exportTransactions: StateFlow<List<ExportTransaction>> =
@@ -219,5 +240,7 @@ class StatisticsViewModel(
                     isIncome = tx.isIncome
                 )
             }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }
+            .distinctUntilChanged()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 }

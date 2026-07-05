@@ -23,7 +23,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -94,21 +93,13 @@ fun MainScreen(
 
     val scope = rememberCoroutineScope()
 
-    val incomeCategories by categoryRepository
-        ?.getByType("INCOME")
-        ?.collectAsState(initial = emptyList())
-        ?: remember { mutableStateOf(emptyList()) }
-
-    val expenseCategories by categoryRepository
-        ?.getByType("EXPENSE")
-        ?.collectAsState(initial = emptyList())
-        ?: remember { mutableStateOf(emptyList()) }
+    if (categoryRepository == null || recurringRepository == null) return
 
     val categoryViewModel: CategoryViewModel = viewModel (
         factory = CategoryViewModelFactory(
-            categoryRepository = categoryRepository!!,
+            categoryRepository = categoryRepository,
             transactionRepository = repository,
-            recurringRepository = recurringRepository!!
+            recurringRepository = recurringRepository
         )
     )
 
@@ -283,6 +274,15 @@ fun MainScreen(
             }
 
             composable("category_settings") {
+
+                val incomeCategories by remember(categoryRepository) {
+                    categoryRepository.getByType("INCOME")
+                }.collectAsState(initial = emptyList())
+
+                val expenseCategories by remember(categoryRepository) {
+                    categoryRepository.getByType("EXPENSE")
+                }.collectAsState(initial = emptyList())
+
                 CategorySettingsScreen(
                     incomeCategories = incomeCategories,
                     expenseCategories = expenseCategories,
