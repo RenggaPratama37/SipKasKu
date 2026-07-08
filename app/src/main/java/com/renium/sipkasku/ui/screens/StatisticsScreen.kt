@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -18,10 +20,7 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +36,7 @@ import com.renium.sipkasku.ui.components.OverviewTab
 import com.renium.sipkasku.ui.components.TrendsTab
 import com.renium.sipkasku.viewmodel.StatisticsViewModel
 import com.renium.sipkasku.viewmodel.StatisticsViewModelFactory
+import kotlinx.coroutines.launch
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -55,28 +55,41 @@ fun StatisticsScreen(
         )
     )
 
-    var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Overview", "Trends", "Categories", "Export")
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
+    val scope = rememberCoroutineScope()
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
         ScrollableTabRow (
-            selectedTabIndex = selectedTab,
+            selectedTabIndex = pagerState.currentPage,
             edgePadding = 16.dp
         ) {
             tabs.forEachIndexed { index, title ->
                 Tab(
-                    selected = selectedTab == index,
-                    onClick = { selectedTab = index },
+                    selected = pagerState.currentPage == index,
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
                     text = { Text(title, style = MaterialTheme.typography.labelMedium) }
                 )
             }
         }
 
-        when (selectedTab) {
-            0 -> OverviewTab(viewModel)
-            1 -> TrendsTab(viewModel)
-            2 -> CategoriesTab(viewModel)
-            3 -> ExportTab(viewModel)
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            beyondViewportPageCount = 1
+        ) { page ->
+            when (page) {
+                0 -> OverviewTab(viewModel)
+                1 -> TrendsTab(viewModel)
+                2 -> CategoriesTab(viewModel)
+                3 -> ExportTab(viewModel)
+            }
         }
     }
 }

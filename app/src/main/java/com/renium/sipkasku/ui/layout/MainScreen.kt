@@ -11,6 +11,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -71,32 +73,22 @@ fun MainScreen(
     recurringRepository: RecurringRepository? = null,
     settingsRepository: SettingsRepository? = null
 ) {
-
     val navController = rememberNavController()
+    val pagerState = rememberPagerState(pageCount = { 3 })
+    val scope = rememberCoroutineScope()
 
-    val items = listOf(
+    val rootScreens = listOf(
         Screen.Home,
         Screen.Statistics,
         Screen.Settings
     )
 
-    val currentRoute by navController
-        .currentBackStackEntryAsState()
+    val currentRoute by navController.currentBackStackEntryAsState()
+    val route = currentRoute?.destination?.route
 
-    val route = currentRoute
-        ?.destination
-        ?.route
-
-
-    val isRootScreen = route in listOf(
-        Screen.Home.route,
-        Screen.Statistics.route,
-        Screen.Settings.route
-    )
+    val isRootScreen = route == "root"
 
     val snackbarHostState = remember { SnackbarHostState() }
-
-    val scope = rememberCoroutineScope()
 
     if (categoryRepository == null || recurringRepository == null) return
 
@@ -110,33 +102,32 @@ fun MainScreen(
 
     Scaffold(
         snackbarHost = {
-            SnackbarHost(
-                hostState = snackbarHostState
-            )
+            SnackbarHost(hostState = snackbarHostState)
         },
-
         topBar = {
             TopAppBar(
                 expandedHeight = 64.dp,
                 title = {
                     Text(
-                        text = when (route) {
-                            Screen.Home.route -> "SipKasKu"
-                            Screen.Statistics.route -> "Statistics"
-                            Screen.Settings.route -> "Settings"
-                            Screen.AddTransaction.route -> "Add Transaction"
-
-                            "pocket_settings" -> "Pocket Settings"
-                            "category_settings" -> "Category Settings"
-                            "appearance_settings" -> "Appearance Settings"
-                            "recurring_settings" -> "Systematic Recurring Transaction"
-
-                            "transaction_detail/{transactionId}" -> "Transaction Detail"
-                            "edit_transaction/{transactionId}" -> "Edit Transaction"
-
-                            "add_recurring" -> "Create Recurring Plan"
-
-                            else -> "SipKasku"
+                        text = if (isRootScreen) {
+                            when (pagerState.currentPage) {
+                                0 -> "SipKasKu"
+                                1 -> "Statistics"
+                                2 -> "Settings"
+                                else -> "SipKasKu"
+                            }
+                        } else {
+                            when (route) {
+                                Screen.AddTransaction.route -> "Add Transaction"
+                                "pocket_settings" -> "Pocket Settings"
+                                "category_settings" -> "Category Settings"
+                                "appearance_settings" -> "Appearance Settings"
+                                "recurring_settings" -> "Systematic Recurring Transaction"
+                                "transaction_detail/{transactionId}" -> "Transaction Detail"
+                                "edit_transaction/{transactionId}" -> "Edit Transaction"
+                                "add_recurring" -> "Create Recurring Plan"
+                                else -> "SipKasku"
+                            }
                         },
                         style = MaterialTheme.typography.titleLarge,
                         color = AppsColors.LeafGreen,
@@ -145,21 +136,13 @@ fun MainScreen(
                 },
                 navigationIcon = {
                     if (!isRootScreen) {
-                        IconButton(
-                            onClick = {
-                                navController.popBackStack()
-                            }
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
-                            )
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                         }
                     }
                 }
             )
         },
-
         bottomBar = {
             AnimatedVisibility(
                 visible = isRootScreen,
@@ -167,18 +150,12 @@ fun MainScreen(
                 exit = slideOutVertically { it } + fadeOut()
             ) {
                 NavigationBar {
-                    items.forEach { screen ->
+                    rootScreens.forEachIndexed { index, screen ->
                         NavigationBarItem(
-                            selected =
-                                route == screen.route,
+                            selected = pagerState.currentPage == index,
                             onClick = {
-                                navController.navigate(
-                                    screen.route
-                                ) {
-                                    popUpTo(
-                                        Screen.Home.route
-                                    )
-                                    launchSingleTop = true
+                                scope.launch {
+                                    pagerState.animateScrollToPage(index)
                                 }
                             },
                             icon = {
@@ -195,33 +172,23 @@ fun MainScreen(
                 }
             }
         },
-
         floatingActionButton = {
-
-            if (
-                route == Screen.Home.route
-            ) {
+            if (isRootScreen && pagerState.currentPage == 0) {
                 FloatingActionButton(
                     onClick = {
-                        navController.navigate(
-                            Screen.AddTransaction.route
-                        )
+                        navController.navigate(Screen.AddTransaction.route)
                     },
                     containerColor = MaterialTheme.colorScheme.tertiary,
                     contentColor = MaterialTheme.colorScheme.onTertiary
                 ) {
-                    Icon(
-                        imageVector = Screen.AddTransaction.icon,
-                        contentDescription = "Add"
-                    )
+                    Icon(imageVector = Screen.AddTransaction.icon, contentDescription = "Add")
                 }
             }
         }
     ) { padding ->
-
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
+            startDestination = "root",
             modifier = Modifier.padding(padding),
             enterTransition = {
                 slideInHorizontally(
@@ -238,61 +205,62 @@ fun MainScreen(
             popEnterTransition = {
                 slideInHorizontally(
                     initialOffsetX = { -it / 3 },
-                    animationSpec = tween (300, easing = EaseOutCubic)
-                ) +fadeIn(animationSpec = tween(300))
-
+                    animationSpec = tween(300, easing = EaseOutCubic)
+                ) + fadeIn(animationSpec = tween(300))
             },
             popExitTransition = {
                 slideOutHorizontally(
                     targetOffsetX = { it },
-                    animationSpec = tween (300, easing = EaseInCubic)
-                ) +fadeOut(animationSpec = tween(150))
+                    animationSpec = tween(300, easing = EaseInCubic)
+                ) + fadeOut(animationSpec = tween(150))
             }
         ) {
-            composable(
-                Screen.Home.route,
-                enterTransition = { fadeIn(tween(200)) },
-                exitTransition = { fadeOut(tween(200)) },
-                popEnterTransition = { fadeIn(tween(200)) },
-                popExitTransition = { fadeOut(tween(200)) }
-            ) {
-
-                HomeScreen(
-                    repository = repository,
-                    snackbarHostState = snackbarHostState,
-                    pocketRepository = pocketRepository,
-                    navController = navController
-                )
+            composable("root") {
+                HorizontalPager(
+                    state = pagerState,
+                    beyondViewportPageCount = 1
+                ) { page ->
+                    when (page) {
+                        0 -> HomeScreen(
+                            repository = repository,
+                            snackbarHostState = snackbarHostState,
+                            pocketRepository = pocketRepository,
+                            categoryRepository = categoryRepository,
+                            navController = navController
+                        )
+                        1 -> StatisticsScreen(
+                            repository = repository,
+                            categoryRepository = categoryRepository,
+                            pocketRepository = pocketRepository
+                        )
+                        2 -> SettingsScreen(
+                            navController = navController
+                        )
+                    }
+                }
             }
 
             composable(
-                Screen.Statistics.route,
-                enterTransition = { fadeIn(tween(200)) },
-                exitTransition = { fadeOut(tween(200)) },
-                popEnterTransition = { fadeIn(tween(200)) },
-                popExitTransition = { fadeOut(tween(200)) }
-            ) {
-                StatisticsScreen(
-                    repository = repository,
-                    categoryRepository = categoryRepository,
-                    pocketRepository = pocketRepository
-                )
-            }
-
-            composable(
-                Screen.Settings.route,
-                enterTransition = { fadeIn(tween(200)) },
-                exitTransition = { fadeOut(tween(200)) },
-                popEnterTransition = { fadeIn(tween(200)) },
-                popExitTransition = { fadeOut(tween(200)) }
-            ) {
-                SettingsScreen(
-                    navController = navController
-                )
-            }
-
-            composable(
-                Screen.AddTransaction.route
+                Screen.AddTransaction.route,
+                enterTransition = {
+                    slideInVertically (
+                        initialOffsetY = { it },
+                        animationSpec = tween(300, easing = EaseOutCubic)
+                    ) + fadeIn(animationSpec = tween(300))
+                },
+                exitTransition = {
+                    slideOutVertically (
+                        targetOffsetY = { it },
+                        animationSpec = tween(300, easing = EaseInCubic)
+                    ) + fadeOut(animationSpec = tween(150))
+                },
+                popEnterTransition = { fadeIn(tween(200))},
+                popExitTransition = {
+                    slideOutVertically (
+                        targetOffsetY = { it },
+                        animationSpec = tween(250, easing = EaseInCubic)
+                    ) + fadeOut(animationSpec = tween(150))
+                }
             ) {
                 AddTransactionScreen(
                     navController = navController,

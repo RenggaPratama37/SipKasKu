@@ -13,12 +13,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.NavController
+import com.renium.sipkasku.data.repository.CategoryRepository
 import com.renium.sipkasku.data.repository.PocketRepository
 import com.renium.sipkasku.data.repository.TransactionRepository
 import com.renium.sipkasku.navigation.Screen
 import com.renium.sipkasku.ui.components.BalanceCard
 import com.renium.sipkasku.ui.components.EmptyState
-import com.renium.sipkasku.ui.components.SwipeableTransactionItem
+import com.renium.sipkasku.ui.components.TransactionItem
 import com.renium.sipkasku.viewmodel.HomeViewModel
 import com.renium.sipkasku.viewmodel.TransactionViewModelFactory
 import kotlinx.coroutines.launch
@@ -28,6 +29,7 @@ fun HomeScreen(
     repository: TransactionRepository,
     snackbarHostState: SnackbarHostState,
     pocketRepository: PocketRepository? = null,
+    categoryRepository: CategoryRepository? = null,
     navController: NavController
 ) {
     val viewModel: HomeViewModel = viewModel(
@@ -50,6 +52,10 @@ fun HomeScreen(
     val pocketsList by pocketRepository?.getAllPockets()?.collectAsState(initial = emptyList())
         ?: remember { mutableStateOf(emptyList()) }
     val pocketsMap = remember(pocketsList) { pocketsList.associateBy { it.id } }
+
+    val categoriesList by categoryRepository?.getAll()?.collectAsState(initial = emptyList())
+        ?: remember { mutableStateOf(emptyList<com.renium.sipkasku.data.local.Category>()) }
+    val categoriesMap = remember(categoriesList) { categoriesList.associateBy { it.id } }
 
     val totalIncome = allTransactions
         .filter{it.isIncome}
@@ -220,29 +226,29 @@ fun HomeScreen(
             ) {
                 items(
                     items = transactions,
-                    key = {it.id}
+                    key = { it.id }
                 ) { transaction ->
-
-                    SwipeableTransactionItem(
+                    TransactionItem(
                         transaction = transaction,
                         pocketName = transaction.pocketId?.let { pocketsMap[it]?.name },
+                        categoryName = transaction.categoryId?.let { categoriesMap[it]?.name },
+                        onClick = {
+                            navController.navigate(Screen.TransactionDetail.createRoute(transaction.id))
+                        },
+                        onEdit = {
+                            navController.navigate(Screen.EditTransaction.createRoute(transaction.id))
+                        },
                         onDelete = {
-
                             viewModel.deleteTransaction(transaction)
-
                             scope.launch {
                                 val result = snackbarHostState.showSnackbar(
-                                    message = "Transaction deleted",
+                                    message = "Transaction has deleted",
                                     actionLabel = "UNDO"
                                 )
-
                                 if (result == SnackbarResult.ActionPerformed) {
                                     viewModel.restoreTransaction(transaction)
                                 }
                             }
-                        },
-                        onClick = {
-                            navController.navigate(Screen.TransactionDetail.createRoute(transaction.id))
                         }
                     )
                 }
